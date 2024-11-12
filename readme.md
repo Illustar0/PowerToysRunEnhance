@@ -12,6 +12,15 @@ PowerToys Run Enhance is a small tool that non-invasively replaces Windows Searc
 
 2. Run it!
 
+## Config
+
+```toml
+[settings]
+# It depends on your system language. If the system language is English, then it should be ‘Search’.
+searchWindowName = "搜索"
+powerToysRunHotKey = "alt+space"
+```
+
 ## Licence
 MIT licence
 
