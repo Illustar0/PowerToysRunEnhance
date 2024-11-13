@@ -18,7 +18,10 @@ PowerToys Run Enhance is a small tool that non-invasively replaces Windows Searc
 [settings]
 # It depends on your system language. If the system language is English, then it should be ‘Search’.
 searchWindowName = "搜索"
+# Your PowerToys Run hotkey.
 powerToysRunHotKey = "alt+space"
+# Whether to automatically focus on the PowerToys Run window after opening it.
+autoFocus = true
 ```
 
 ## Licence

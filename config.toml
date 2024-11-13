@@ -1,3 +1,4 @@
 [settings]
 searchWindowName = "搜索"
 powerToysRunHotKey = "alt+space"
+autoFocus = true
