@@ -1,3 +1,4 @@
+import os
 import pyWinhook as pyHook
 import pythoncom
 import uiautomation as automation
@@ -56,8 +57,7 @@ class PowerToysRunEnhanceApp:
         self.enabled = not item.checked
 
     def quit_app(self, icon, item):
-        icon.stop()
-        quit()
+        os._exit(0)
 
     def create_tray_icon(self):
         image = Image.open("icon.png")
