@@ -4,7 +4,7 @@ PowerToys Run Enhance is a small tool that non-invasively replaces Windows Searc
 
 ## Function
 
-- Replaces Windows Search (with some bugs)
+- Replaces Windows Search
 
 ## How to use
 
