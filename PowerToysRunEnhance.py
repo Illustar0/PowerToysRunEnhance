@@ -9,12 +9,11 @@ import toml
 config = toml.load('config.toml')
 searchWindowName = config['settings']['searchWindowName']
 powerToysRunHotKey = config['settings']['powerToysRunHotKey']
-alphabet = list(string.ascii_lowercase)
 
 
 def on_press(key):
     try:
-        if key.char.lower() in alphabet:
+        if hasattr(key, 'char') and key.char is not None:
             comtypes.CoInitialize()
             window = automation.WindowControl(Name=searchWindowName, className="Windows.UI.Core.CoreWindow",
                                               searchDepth=2)
