@@ -175,7 +175,7 @@ class PowerToysRunEnhanceApp:
         os._exit(0)
 
     def create_tray_icon(self):
-        image = Image.open("icon.png")
+        image = Image.open(os.path.join(os.path.dirname(__file__), "icon.png"))
         icon = pystray.Icon("PowerToysRunEnhance", image, menu=pystray.Menu(
             pystray.MenuItem("Enabled", self.appEnabled, checked=lambda item: self.enabled),
             pystray.MenuItem("About", self.show_about_dialog),
