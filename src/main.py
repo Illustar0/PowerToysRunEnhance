@@ -32,9 +32,9 @@ def highlight_toml(text_widget):
     text_widget.tag_remove("string", "1.0", tk.END)
     text_widget.tag_remove("comment", "1.0", tk.END)
 
-    toml_key_pattern = r'^\s*([\w\-]+)\s*='
-    toml_string_pattern = r'\"(.*?)\"'
-    toml_comment_pattern = r'#.*$'
+    toml_key_pattern = r"^\s*([\w\-]+)\s*="
+    toml_string_pattern = r"\"(.*?)\""
+    toml_comment_pattern = r"#.*$"
 
     content = text_widget.get("1.0", tk.END)
 
@@ -66,12 +66,12 @@ def activate_window(window_name):
 class PowerToysRunEnhanceApp:
     def __init__(self):
         try:
-            self.config = toml.load('config.toml')
+            self.config = toml.load("config.toml")
         except Exception as e:
             self.show_config_error_dialog(e)
-        self.searchWindowName = self.config['settings']['searchWindowName']
-        self.powerToysRunHotKey = self.config['settings']['powerToysRunHotKey']
-        self.autoFocus = self.config['settings']['autoFocus']
+        self.searchWindowName = self.config["settings"]["searchWindowName"]
+        self.powerToysRunHotKey = self.config["settings"]["powerToysRunHotKey"]
+        self.autoFocus = self.config["settings"]["autoFocus"]
         self.enabled = True
         self.stopHook = False
 
@@ -79,7 +79,9 @@ class PowerToysRunEnhanceApp:
         def run_dialog():
             root = tk.Tk()
             root.withdraw()
-            messagebox.showerror("Unable to load config", f"Unable to load config.toml: {str(error)}")
+            messagebox.showerror(
+                "Unable to load config", f"Unable to load config.toml: {str(error)}"
+            )
             root.destroy()
 
         dialog_thread = threading.Thread(target=run_dialog)
@@ -93,7 +95,9 @@ class PowerToysRunEnhanceApp:
             dialog = tk.Toplevel(root)
             dialog.title("About")
             dialog.resizable(False, False)
-            label = tk.Label(dialog, text="PowerToys Run Enhance\nVersion: 0.0.4\nAuthor: Illustar0")
+            label = tk.Label(
+                dialog, text="PowerToys Run Enhance\nVersion: 0.0.4\nAuthor: Illustar0"
+            )
             label.pack(pady=10)
 
             def open_github():
@@ -102,11 +106,19 @@ class PowerToysRunEnhanceApp:
             button_frame = tk.Frame(dialog)
             button_frame.pack(pady=5)
 
-            visit_button = tk.Button(button_frame, text="Visit GitHub", command=open_github)
+            visit_button = tk.Button(
+                button_frame, text="Visit GitHub", command=open_github
+            )
             visit_button.pack(side=tk.LEFT, padx=5)
             close_button = tk.Button(button_frame, text="Close", command=dialog.destroy)
             close_button.pack(side=tk.LEFT, padx=5)
-            dialog.geometry("+%d+%d" % (root.winfo_screenwidth() / 2 - 150, root.winfo_screenheight() / 2 - 50))
+            dialog.geometry(
+                "+%d+%d"
+                % (
+                    root.winfo_screenwidth() / 2 - 150,
+                    root.winfo_screenheight() / 2 - 50,
+                )
+            )
 
             root.mainloop()
 
@@ -115,12 +127,12 @@ class PowerToysRunEnhanceApp:
 
     def show_config_dialog(self, icon, item):
         def run_dialog():
-            '''
+            """
             root = tk.Tk()
             root.withdraw()
             messagebox.showinfo("Config", f"searchWindowName={self.searchWindowName}\npowerToysRunHotKey={self.powerToysRunHotKey}\nautoFocus={self.autoFocus}")
             root.destroy()
-            '''
+            """
             root = tk.Tk()
             root.withdraw()
             dialog = tk.Toplevel(root)
@@ -131,7 +143,7 @@ class PowerToysRunEnhanceApp:
             text.tag_configure("key", foreground="blue")
             text.tag_configure("string", foreground="green")
             text.tag_configure("comment", foreground="grey")
-            with open('config.toml', 'r', encoding='utf-8') as file:
+            with open("../config/config.toml.example", "r", encoding="utf-8") as file:
                 config_content = file.read()
             text.insert(tk.END, config_content)
 
@@ -143,7 +155,13 @@ class PowerToysRunEnhanceApp:
             close_button = tk.Button(button_frame, text="Close", command=dialog.destroy)
             close_button.pack(side=tk.LEFT, padx=5)
 
-            dialog.geometry("+%d+%d" % (root.winfo_screenwidth() / 2 - 250, root.winfo_screenheight() / 2 - 150))
+            dialog.geometry(
+                "+%d+%d"
+                % (
+                    root.winfo_screenwidth() / 2 - 250,
+                    root.winfo_screenheight() / 2 - 150,
+                )
+            )
             root.mainloop()
 
         dialog_thread = threading.Thread(target=run_dialog)
@@ -158,7 +176,7 @@ class PowerToysRunEnhanceApp:
                 try:
                     comtypes.CoInitialize()
                     close_window(event.Window)
-                    pyautogui.hotkey(*self.powerToysRunHotKey.split('+'), interval=0.01)
+                    pyautogui.hotkey(*self.powerToysRunHotKey.split("+"), interval=0.01)
                     # 一个临时解决方案
                     if self.autoFocus:
                         activate_window("PowerToys.PowerLauncher")
@@ -176,17 +194,28 @@ class PowerToysRunEnhanceApp:
 
     def create_tray_icon(self):
         image = Image.open(os.path.join(os.path.dirname(__file__), "icon.png"))
-        icon = pystray.Icon("PowerToysRunEnhance", image, menu=pystray.Menu(
-            pystray.MenuItem("Enabled", self.appEnabled, checked=lambda item: self.enabled),
-            pystray.MenuItem("About", self.show_about_dialog),
-            pystray.MenuItem("Config", self.show_config_dialog),
-            pystray.MenuItem("Quit", self.quit_app)
-        ))
+        icon = pystray.Icon(
+            "PowerToysRunEnhance",
+            image,
+            menu=pystray.Menu(
+                pystray.MenuItem(
+                    "Enabled", self.appEnabled, checked=lambda item: self.enabled
+                ),
+                pystray.MenuItem("About", self.show_about_dialog),
+                pystray.MenuItem("Config", self.show_config_dialog),
+                pystray.MenuItem("Quit", self.quit_app),
+            ),
+        )
         icon.run()
 
 
-user32 = ctypes.WinDLL('user32', use_last_error=True)
-user32.PostMessageW.argtypes = (wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM)
+user32 = ctypes.WinDLL("user32", use_last_error=True)
+user32.PostMessageW.argtypes = (
+    wintypes.HWND,
+    wintypes.UINT,
+    wintypes.WPARAM,
+    wintypes.LPARAM,
+)
 
 app = PowerToysRunEnhanceApp()
 icon_thread = threading.Thread(target=app.create_tray_icon)
