@@ -1,228 +1,175 @@
-import os
-import pyWinhook as pyHook
-import pythoncom
-import uiautomation as automation
-import comtypes
-import threading
-from PIL import Image
-import pystray
-import pyautogui
-import toml
-import ctypes
-from ctypes import wintypes
-import tkinter as tk
-from tkinter import messagebox
-import webbrowser
-import re
+import sys
 
-
-def is_valid_key(key):
-    if key in [chr(i) for i in range(33, 127)] + [chr(i) for i in range(65281, 65375)]:
-        return True
-    return False
-
-
-def close_window(hwnd):
-    user32.PostMessageW(hwnd, 0x0010, 0, 0)
-
-
-def highlight_toml(text_widget):
-    # 清除所有现有标签
-    text_widget.tag_remove("key", "1.0", tk.END)
-    text_widget.tag_remove("string", "1.0", tk.END)
-    text_widget.tag_remove("comment", "1.0", tk.END)
-
-    toml_key_pattern = r"^\s*([\w\-]+)\s*="
-    toml_string_pattern = r"\"(.*?)\""
-    toml_comment_pattern = r"#.*$"
-
-    content = text_widget.get("1.0", tk.END)
-
-    for match in re.finditer(toml_key_pattern, content, re.MULTILINE):
-        start, end = match.span(1)
-        start_index = f"1.0 + {start} chars"
-        end_index = f"1.0 + {end} chars"
-        text_widget.tag_add("key", start_index, end_index)
-
-    for match in re.finditer(toml_string_pattern, content):
-        start, end = match.span()
-        start_index = f"1.0 + {start} chars"
-        end_index = f"1.0 + {end} chars"
-        text_widget.tag_add("string", start_index, end_index)
-
-    for match in re.finditer(toml_comment_pattern, content):
-        start, end = match.span()
-        start_index = f"1.0 + {start} chars"
-        end_index = f"1.0 + {end} chars"
-        text_widget.tag_add("comment", start_index, end_index)
-
-
-def activate_window(window_name):
-    window = automation.WindowControl(Name=window_name)
-    if window.Exists(0, 0):
-        window.SetFocus()
-
-
-class PowerToysRunEnhanceApp:
-    def __init__(self):
-        try:
-            self.config = toml.load("config.toml")
-        except Exception as e:
-            self.show_config_error_dialog(e)
-        self.searchWindowName = self.config["settings"]["searchWindowName"]
-        self.powerToysRunHotKey = self.config["settings"]["powerToysRunHotKey"]
-        self.autoFocus = self.config["settings"]["autoFocus"]
-        self.enabled = True
-        self.stopHook = False
-
-    def show_config_error_dialog(self, error):
-        def run_dialog():
-            root = tk.Tk()
-            root.withdraw()
-            messagebox.showerror(
-                "Unable to load config", f"Unable to load config.toml: {str(error)}"
-            )
-            root.destroy()
-
-        dialog_thread = threading.Thread(target=run_dialog)
-        dialog_thread.start()
-
-    def show_about_dialog(self, icon, item):
-        def run_dialog():
-            root = tk.Tk()
-            root.withdraw()
-
-            dialog = tk.Toplevel(root)
-            dialog.title("About")
-            dialog.resizable(False, False)
-            label = tk.Label(
-                dialog, text="PowerToys Run Enhance\nVersion: 0.0.4\nAuthor: Illustar0"
-            )
-            label.pack(pady=10)
-
-            def open_github():
-                webbrowser.open("https://github.com/Illustar0/PowerToysRunEnhance")
-
-            button_frame = tk.Frame(dialog)
-            button_frame.pack(pady=5)
-
-            visit_button = tk.Button(
-                button_frame, text="Visit GitHub", command=open_github
-            )
-            visit_button.pack(side=tk.LEFT, padx=5)
-            close_button = tk.Button(button_frame, text="Close", command=dialog.destroy)
-            close_button.pack(side=tk.LEFT, padx=5)
-            dialog.geometry(
-                "+%d+%d"
-                % (
-                    root.winfo_screenwidth() / 2 - 150,
-                    root.winfo_screenheight() / 2 - 50,
-                )
-            )
-
-            root.mainloop()
-
-        dialog_thread = threading.Thread(target=run_dialog)
-        dialog_thread.start()
-
-    def show_config_dialog(self, icon, item):
-        def run_dialog():
-            """
-            root = tk.Tk()
-            root.withdraw()
-            messagebox.showinfo("Config", f"searchWindowName={self.searchWindowName}\npowerToysRunHotKey={self.powerToysRunHotKey}\nautoFocus={self.autoFocus}")
-            root.destroy()
-            """
-            root = tk.Tk()
-            root.withdraw()
-            dialog = tk.Toplevel(root)
-            dialog.title("Config")
-            dialog.resizable(False, False)
-            text = tk.Text(dialog, wrap=tk.WORD, width=50, height=20)
-            text.pack(padx=10, pady=10, expand=True, fill=tk.BOTH)
-            text.tag_configure("key", foreground="blue")
-            text.tag_configure("string", foreground="green")
-            text.tag_configure("comment", foreground="grey")
-            with open("../config/config.toml.example", "r", encoding="utf-8") as file:
-                config_content = file.read()
-            text.insert(tk.END, config_content)
-
-            highlight_toml(text)
-            text.config(state=tk.DISABLED)
-            button_frame = tk.Frame(dialog)
-            button_frame.pack(pady=10)
-
-            close_button = tk.Button(button_frame, text="Close", command=dialog.destroy)
-            close_button.pack(side=tk.LEFT, padx=5)
-
-            dialog.geometry(
-                "+%d+%d"
-                % (
-                    root.winfo_screenwidth() / 2 - 250,
-                    root.winfo_screenheight() / 2 - 150,
-                )
-            )
-            root.mainloop()
-
-        dialog_thread = threading.Thread(target=run_dialog)
-        dialog_thread.start()
-
-    def on_keyboard_event(self, event):
-        if self.stopHook:
-            return True
-        if event.WindowName == self.searchWindowName and self.enabled:
-            if is_valid_key(event.Key):
-                self.stopHook = True
-                try:
-                    comtypes.CoInitialize()
-                    close_window(event.Window)
-                    pyautogui.hotkey(*self.powerToysRunHotKey.split("+"), interval=0.01)
-                    # 一个临时解决方案
-                    if self.autoFocus:
-                        activate_window("PowerToys.PowerLauncher")
-                finally:
-                    self.stopHook = False
-                    comtypes.CoUninitialize()
-            return True
-        return True
-
-    def appEnabled(self, icon, item):
-        self.enabled = not item.checked
-
-    def quit_app(self, icon, item):
-        os._exit(0)
-
-    def create_tray_icon(self):
-        image = Image.open(os.path.join(os.path.dirname(__file__), "icon.png"))
-        icon = pystray.Icon(
-            "PowerToysRunEnhance",
-            image,
-            menu=pystray.Menu(
-                pystray.MenuItem(
-                    "Enabled", self.appEnabled, checked=lambda item: self.enabled
-                ),
-                pystray.MenuItem("About", self.show_about_dialog),
-                pystray.MenuItem("Config", self.show_config_dialog),
-                pystray.MenuItem("Quit", self.quit_app),
-            ),
-        )
-        icon.run()
-
-
-user32 = ctypes.WinDLL("user32", use_last_error=True)
-user32.PostMessageW.argtypes = (
-    wintypes.HWND,
-    wintypes.UINT,
-    wintypes.WPARAM,
-    wintypes.LPARAM,
+import httpx
+from PySide6.QtCore import QThread, Signal, QUrl, QSize, QEventLoop, QTimer
+from PySide6.QtGui import QIcon, QDesktopServices
+from PySide6.QtWidgets import QApplication
+from qfluentwidgets import (
+    FluentIcon,
+    MessageBox,
+    Flyout,
+    InfoBarIcon,
+    FlyoutAnimationType,
+    NavigationAvatarWidget,
+    SplashScreen,
+)
+from qfluentwidgets import (
+    NavigationItemPosition,
+    FluentWindow,
 )
 
-app = PowerToysRunEnhanceApp()
-icon_thread = threading.Thread(target=app.create_tray_icon)
-icon_thread.start()
+from interfaces.main import MainInterface
 
-hm = pyHook.HookManager()
-hm.KeyDown = app.on_keyboard_event
-hm.HookKeyboard()
+__VERSION__ = "0.0.1"
 
-pythoncom.PumpMessages()
+from interfaces.setting import SettingInterface
+
+
+class UpdateCheckerThread(QThread):
+    # 定义信号
+    update_found = Signal(str, str)  # 发现更新时发送当前版本和最新版本
+    update_not_found = Signal()  # 没有更新时发送信号
+    check_error = Signal(str)  # 检查出错时发送错误信息
+
+    def run(self):
+        try:
+            # 使用同步的 httpx 客户端
+            response = httpx.get(
+                "https://api.github.com/repos/Illustar0/PowerToysRunEnhance/releases/latest"
+            )
+            response.raise_for_status()
+            latest_version = response.json().get("tag_name", "").lstrip("v")
+
+            # 比较版本号
+            current_version = __VERSION__
+
+            if latest_version and latest_version != current_version:
+                self.update_found.emit(current_version, latest_version)
+            else:
+                self.update_not_found.emit()
+        except Exception as e:
+            self.check_error.emit(str(e))
+
+
+class Window(FluentWindow):
+    """主界面"""
+
+    def __init__(self):
+        super().__init__()
+        self.resize(900, 700)
+        self.setWindowIcon(QIcon("./resources/logo.png"))
+        self.setWindowTitle("PowerToysRunEnhance")
+        self.splashScreen = SplashScreen(self.windowIcon(), self)
+        self.splashScreen.setIconSize(QSize(102, 102))
+
+        # 2. 在创建其他子页面前先显示主界面
+        self.show()
+
+        # 延迟 1 秒以显示启动页面
+        loop = QEventLoop(self)
+        QTimer.singleShot(1000, loop.quit)
+        loop.exec()
+
+        self.homeInterface = MainInterface("Main Interface", __VERSION__, self)
+        self.settingInterface = SettingInterface("Setting Interface", self)
+
+        # 创建更新检查线程
+        self.update_checker = UpdateCheckerThread()
+        self.update_checker.update_found.connect(self.on_update_found)
+        self.update_checker.update_not_found.connect(self.on_update_not_found)
+        self.update_checker.check_error.connect(self.on_check_error)
+
+        self.initNavigation()
+        self.splashScreen.finish()
+        self.setWindowTitle("PowerToysRunEnhance - Home")
+        self.stackedWidget.currentChanged.connect(self.currentWidgetChanged)
+
+    def currentWidgetChanged(self):
+        self.currentInterface = self.stackedWidget.currentWidget()
+        if self.currentInterface == self.homeInterface:
+            self.setWindowTitle("PowerToysRunEnhance - Home")
+        elif self.currentInterface == self.settingInterface:
+            self.setWindowTitle("PowerToysRunEnhance - Settings")
+
+    def showMessageBox(self):
+        w = MessageBox(
+            "支持作者🥰",
+            "个人开发不易，如果这个项目帮助到了您，可以考虑请作者喝一瓶快乐水🥤。您的支持就是作者开发和维护项目的动力🚀",
+            self,
+        )
+        w.yesButton.setText("Go🥰")
+        w.cancelButton.setText("Next time😭")
+
+        if w.exec():
+            QDesktopServices.openUrl(QUrl("https://afdian.com/a/Illustar0"))
+
+    def initNavigation(self):
+        # 添加子界面到导航
+        self.addSubInterface(self.homeInterface, FluentIcon.HOME, "Home")
+        self.navigationInterface.addSeparator()
+
+        self.navigationInterface.addWidget(
+            routeKey="Avatar",
+            widget=NavigationAvatarWidget("Illustar0", "./resources/Avatar.png"),
+            onClick=self.showMessageBox,
+            position=NavigationItemPosition.BOTTOM,
+        )
+
+        self.addSubInterface(
+            self.settingInterface,
+            FluentIcon.SETTING,
+            "Settings",
+            NavigationItemPosition.BOTTOM,
+        )
+
+    def initWindow(self):
+        self.resize(900, 700)
+        self.setWindowIcon(QIcon("./resources/logo.png"))
+        self.setWindowTitle("PowerToysRunEnhance")
+
+    def on_update_found(self, current_version, latest_version):
+        update_message = MessageBox(
+            "检测到更新",
+            f"当前版本：{current_version}\n最新版本：{latest_version}",
+            self,
+        )
+        update_message.yesButton.setText("更新")
+        update_message.cancelButton.setText("取消")
+        if update_message.exec():
+            QDesktopServices.openUrl(
+                QUrl("https://github.com/Illustar0/PowerToysRunEnhance/releases")
+            )
+
+    def on_update_not_found(self):
+        Flyout.create(
+            icon=InfoBarIcon.SUCCESS,
+            title="检查完成",
+            content="当前已是最新版本",
+            target=self,
+            parent=self,
+            isClosable=True,
+            aniType=FlyoutAnimationType.PULL_UP,
+        )
+
+    def on_check_error(self, error_msg):
+        MessageBox("检查更新失败", f"错误信息：{error_msg}", self).exec()
+
+    def on_check_update_button_clicked(self) -> None:
+        Flyout.create(
+            icon=InfoBarIcon.INFORMATION,
+            title="检查更新中",
+            content="正在检查更新...",
+            target=self,
+            parent=self,
+            isClosable=True,
+            aniType=FlyoutAnimationType.PULL_UP,
+        )
+        # 启动更新检查线程
+        self.update_checker.start()
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    w = Window()
+    w.show()
+    app.exec()

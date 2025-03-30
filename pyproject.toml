@@ -5,10 +5,10 @@ description = "A small tool that non-invasively replaces Windows Search with Pow
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "pyautogui>=0.9.54",
-    "pystray>=0.19.5",
-    "pywin32>=310",
-    "pywinhook>=1.6.2",
-    "toml>=0.10.2",
+    "httpx>=0.28.1",
+    "pyside6>=6.8.3",
+    "pyside6-fluent-widgets[full]>=1.7.6",
+    "tomlkit>=0.13.2",
     "uiautomation>=2.0.20",
+    "winput>=1.5.0",
 ]
