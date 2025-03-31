@@ -12,7 +12,7 @@ from qfluentwidgets import (
     CaptionLabel,
     BodyLabel,
     SwitchButton,
-    LineEdit,
+    ComboBox,
 )
 from tomlkit import toml_file
 from winput import WM_KEYDOWN, WM_SYSKEYDOWN, WM_KEYUP, WM_SYSKEYUP
@@ -430,10 +430,7 @@ class FluentDivider(QFrame):
         self.updateStyle()
 
 
-class SearchWindowNameCard(BaseCard):
-    """AutoFocus 设置卡片"""
-
-    # 定义信号
+class DetectionCard(BaseCard):
     configUpdated = Signal(object)
 
     def __init__(
@@ -441,24 +438,27 @@ class SearchWindowNameCard(BaseCard):
         title: str,
         content: str,
         icon: FluentIcon,
-        default_value: str,
+        default_value: int,
         extra_signal_params=None,
     ):
         super().__init__(title, content, icon)
         self.extra_signal_params = extra_signal_params
-        # 创建快捷键编辑器
 
-        self.lineEdit = LineEdit(self)
-        self.lineEdit.setText(default_value)
-        self.lineEdit.textEdited.connect(self.on_checked_changed)
-        self.hBoxLayout.addWidget(self.lineEdit)
+        self.comboBox = ComboBox(self)
+        items = ["输入检测", "文本框检测"]
+        self.comboBox.addItems(items)
+        self.comboBox.setCurrentIndex(default_value)
+        self.comboBox.currentIndexChanged.connect(self.on_checked_changed)
+        self.hBoxLayout.addWidget(self.comboBox)
         self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
     def on_checked_changed(self):
         if self.extra_signal_params:
-            self.configUpdated.emit((self.lineEdit.text(), self.extra_signal_params))
+            self.configUpdated.emit(
+                (self.comboBox.currentIndex(), self.extra_signal_params)
+            )
         else:
-            self.configUpdated.emit(self.lineEdit.text())
+            self.configUpdated.emit(self.comboBox.currentIndex())
 
 
 class SettingInterface(QWidget):
@@ -470,16 +470,16 @@ class SettingInterface(QWidget):
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.vBoxLayout)  # 设置主布局
         self.vBoxLayout.addWidget(TitleLabel("设置", self))
-        searchWindowNameCard = SearchWindowNameCard(
-            title="Windows 搜索窗口名",
-            content="设置 Windows 搜索的窗口名",
+        detectionCard = DetectionCard(
+            title="检测方法",
+            content="决定何时以及如何拉起PowerToys Run",
             icon=FluentIcon.LABEL,
-            default_value=CONFIG.get("settings.searchWindowName"),
-            extra_signal_params="settings.searchWindowName",
+            default_value=CONFIG.get("settings.detectionMethods"),
+            extra_signal_params="settings.detectionMethods",
         )
-        searchWindowNameCard.configUpdated.connect(CONFIG.on_config_updated)
+        detectionCard.configUpdated.connect(CONFIG.on_config_updated)
         self.vBoxLayout.addWidget(FluentDivider())
-        self.vBoxLayout.addWidget(searchWindowNameCard)
+        self.vBoxLayout.addWidget(detectionCard)
         shortcutCard = ShortcutCard(
             title="PowerToys Run 快捷键",
             content="PowerToys Run 的快捷键设置",

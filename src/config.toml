@@ -1,4 +1,4 @@
 [settings]
-searchWindowName = "搜索"
+detectionMethods = 1
 powerToysRunShortCut = "Alt+Space"
 autoFocus = true
