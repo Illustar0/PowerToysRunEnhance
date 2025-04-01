@@ -1,4 +1,5 @@
 from os import PathLike
+
 import winput
 from PySide6.QtCore import Qt, QObject, Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame
@@ -13,6 +14,7 @@ from qfluentwidgets import (
     BodyLabel,
     SwitchButton,
     ComboBox,
+    DoubleSpinBox,
 )
 from tomlkit import toml_file
 from winput import WM_KEYDOWN, WM_SYSKEYDOWN, WM_KEYUP, WM_SYSKEYUP
@@ -134,6 +136,59 @@ VK_TO_KEY_NAME = {
     "VK_OEM_6": "]",
     "VK_OEM_7": "'",
 }
+SPECIAL_KEYS_VKCODE = [
+    8,  # Backspace（退格键）
+    9,  # Tab（制表键）
+    13,  # Enter（回车键）
+    16,  # Shift（Shift 键）
+    17,  # Ctrl（Control 键）
+    18,  # Alt（Alt 键）
+    19,  # Pause/Break（暂停/中断键）
+    20,  # Caps Lock（大写锁定键）
+    27,  # Esc（退出键）
+    33,  # Page Up（向上翻页键）
+    34,  # Page Down（向下翻页键）
+    35,  # End（结束键）
+    36,  # Home（主页键）
+    37,  # Left Arrow（左箭头）
+    38,  # Up Arrow（上箭头）
+    39,  # Right Arrow（右箭头）
+    40,  # Down Arrow（下箭头）
+    44,  # Print Screen（打印屏幕键）
+    45,  # Insert（插入键）
+    46,  # Delete（删除键）
+    # 功能键 F1-F12
+    112,  # F1
+    113,  # F2
+    114,  # F3
+    115,  # F4
+    116,  # F5
+    117,  # F6
+    118,  # F7
+    119,  # F8
+    120,  # F9
+    121,  # F10
+    122,  # F11
+    123,  # F12
+    # 其他常用键
+    91,  # Left Windows（左 Windows 键）
+    92,  # Right Windows（右 Windows 键）
+    93,  # Applications（应用菜单键）
+    144,  # Num Lock（数字锁定键）
+    145,  # Scroll Lock（滚动锁定键）
+    160,
+    162,
+    # 媒体控制键（可能不在所有键盘中都支持）
+    173,  # Volume Mute（静音键）
+    174,  # Volume Down（降低音量键）
+    175,  # Volume Up（增加音量键）
+    176,  # Next Track（下一曲键）
+    177,  # Previous Track（上一曲键）
+    178,  # Stop（停止播放键）
+    179,  # Play/Pause（播放/暂停键）
+]
+KEY_NAME_TO_VK = {k: vk for vk, k in VK_TO_KEY_NAME.items()}
+VK_TO_VK_CODE = {vk: vkc for vkc, vk in winput.vk_code_dict.items()}
 
 
 class BaseConfig(QObject):
@@ -430,7 +485,7 @@ class FluentDivider(QFrame):
         self.updateStyle()
 
 
-class DetectionCard(BaseCard):
+class DropDownCard(BaseCard):
     configUpdated = Signal(object)
 
     def __init__(
@@ -438,6 +493,7 @@ class DetectionCard(BaseCard):
         title: str,
         content: str,
         icon: FluentIcon,
+        choices: list[str],
         default_value: int,
         extra_signal_params=None,
     ):
@@ -445,8 +501,7 @@ class DetectionCard(BaseCard):
         self.extra_signal_params = extra_signal_params
 
         self.comboBox = ComboBox(self)
-        items = ["输入检测", "文本框检测"]
-        self.comboBox.addItems(items)
+        self.comboBox.addItems(choices)
         self.comboBox.setCurrentIndex(default_value)
         self.comboBox.currentIndexChanged.connect(self.on_checked_changed)
         self.hBoxLayout.addWidget(self.comboBox)
@@ -461,6 +516,35 @@ class DetectionCard(BaseCard):
             self.configUpdated.emit(self.comboBox.currentIndex())
 
 
+class WaitTimeSetCard(BaseCard):
+    configUpdated = Signal(object)
+
+    def __init__(
+        self,
+        title: str,
+        content: str,
+        icon: FluentIcon,
+        range: tuple,
+        default_value: float,
+        extra_signal_params=None,
+    ):
+        super().__init__(title, content, icon)
+        self.extra_signal_params = extra_signal_params
+
+        self.doubleSpinBox = DoubleSpinBox(self)
+        self.doubleSpinBox.setRange(range[0], range[1])
+        self.doubleSpinBox.setValue(default_value)
+        self.doubleSpinBox.valueChanged.connect(self.on_checked_changed)
+        self.hBoxLayout.addWidget(self.doubleSpinBox)
+        self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+    def on_checked_changed(self, value):
+        if self.extra_signal_params:
+            self.configUpdated.emit((value, self.extra_signal_params))
+        else:
+            self.configUpdated.emit(value)
+
+
 class SettingInterface(QWidget):
     def __init__(self, title: str, parent=None):
         super().__init__(parent)
@@ -470,16 +554,37 @@ class SettingInterface(QWidget):
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.vBoxLayout)  # 设置主布局
         self.vBoxLayout.addWidget(TitleLabel("设置", self))
-        detectionCard = DetectionCard(
+        self.vBoxLayout.addWidget(FluentDivider())
+        detectionCard = DropDownCard(
             title="检测方法",
-            content="决定何时以及如何拉起PowerToys Run",
-            icon=FluentIcon.LABEL,
+            content="触发拉起 PowerToys Run 的方法",
+            icon=FluentIcon.VIEW,
+            choices=["输入检测", "文本框检测 (不推荐)"],
             default_value=CONFIG.get("settings.detectionMethods"),
             extra_signal_params="settings.detectionMethods",
         )
         detectionCard.configUpdated.connect(CONFIG.on_config_updated)
-        self.vBoxLayout.addWidget(FluentDivider())
         self.vBoxLayout.addWidget(detectionCard)
+        inputCard = DropDownCard(
+            title="输入方法",
+            content="向 PowerToys Run 输入文本的方法",
+            icon=FluentIcon.PENCIL_INK,
+            choices=["键盘模拟", "文本框修改 (不推荐)"],
+            default_value=CONFIG.get("settings.inputMethods"),
+            extra_signal_params="settings.inputMethods",
+        )
+        inputCard.configUpdated.connect(CONFIG.on_config_updated)
+        self.vBoxLayout.addWidget(inputCard)
+        waitTimeSetCard = WaitTimeSetCard(
+            title="等待时间",
+            content="等待搜索窗口完全关闭的时间",
+            icon=FluentIcon.STOP_WATCH,
+            range=(0, 10),
+            default_value=CONFIG.get("settings.waitTime"),
+            extra_signal_params="settings.waitTime",
+        )
+        waitTimeSetCard.configUpdated.connect(CONFIG.on_config_updated)
+        self.vBoxLayout.addWidget(waitTimeSetCard)
         shortcutCard = ShortcutCard(
             title="PowerToys Run 快捷键",
             content="PowerToys Run 的快捷键设置",
@@ -493,7 +598,7 @@ class SettingInterface(QWidget):
         autoFocusCard = AutoFocusCard(
             title="自动设置焦点",
             content="是否自动为 PowerToys Run 窗口设置焦点",
-            icon=FluentIcon.LABEL,
+            icon=FluentIcon.TAG,
             default_value=CONFIG.get("settings.autoFocus"),
             extra_signal_params="settings.autoFocus",
         )

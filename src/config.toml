@@ -1,4 +1,6 @@
 [settings]
-detectionMethods = 1
+detectionMethods = 0
+inputMethods = 0
 powerToysRunShortCut = "Alt+Space"
-autoFocus = true
+autoFocus = false
+waitTime = 0.5

@@ -1,14 +1,17 @@
 [project]
 name = "powertoysrunenhance"
-version = "0.0.4"
+version = "0.1.0"
 description = "A small tool that non-invasively replaces Windows Search with PowerToys Run."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "httpx>=0.28.1",
+    "loguru>=0.7.3",
+    "pynput>=1.8.1",
     "pyside6>=6.8.3",
     "pyside6-fluent-widgets[full]>=1.7.6",
+    "pywin32>=310",
+    "pywinauto>=0.6.9",
     "tomlkit>=0.13.2",
-    "uiautomation>=2.0.20",
     "winput>=1.5.0",
 ]

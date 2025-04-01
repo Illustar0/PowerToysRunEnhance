@@ -1,9 +1,30 @@
+import ctypes
+import signal
 import sys
-
+import time
+from ctypes import wintypes
 import httpx
-from PySide6.QtCore import QThread, Signal, QUrl, QSize, QEventLoop, QTimer
+import pywinauto
+import win32api
+import win32con
+import win32gui
+import win32process
+import winput
+from PySide6.QtCore import (
+    QThread,
+    Signal,
+    QUrl,
+    QSize,
+    QEventLoop,
+    QTimer,
+    Slot,
+    QObject,
+)
 from PySide6.QtGui import QIcon, QDesktopServices
 from PySide6.QtWidgets import QApplication
+from loguru import logger
+from pynput import keyboard
+from pynput.keyboard import Controller, Key
 from qfluentwidgets import (
     FluentIcon,
     MessageBox,
@@ -19,10 +40,183 @@ from qfluentwidgets import (
 )
 
 from interfaces.main import MainInterface
+from interfaces.setting import (
+    SettingInterface,
+    CONFIG,
+    SPECIAL_KEYS_VKCODE,
+    VK_TO_KEY_NAME,
+)
 
-__VERSION__ = "0.0.1"
+__VERSION__ = "0.1.0"
 
-from interfaces.setting import SettingInterface
+
+class GlobalSignals(QObject):
+    powertoys_launcher_started = Signal(object)
+    input_detection_done = Signal(object)
+    input_detection_listen = Signal(object)
+    SetForegroundWindow = Signal(object)
+
+
+global_signals = GlobalSignals()
+
+
+class OpenPowertoysRun(QThread):
+    def run(self):
+        shortcut = CONFIG.get("settings.powerToysRunShortCut", "Alt+Space")
+        keyboard = Controller()
+        keys = shortcut.split("+")
+
+        # 按下所有键
+        for key in keys:
+            if key.lower() == "alt":
+                keyboard.press(Key.alt)
+            elif key.lower() == "ctrl":
+                keyboard.press(Key.ctrl)
+            elif key.lower() == "shift":
+                keyboard.press(Key.shift)
+            elif key.lower() == "space":
+                keyboard.press(Key.space)
+            else:
+                keyboard.press(key.lower())
+
+        # 释放所有键
+        for key in reversed(keys):
+            if key.lower() == "alt":
+                keyboard.release(Key.alt)
+            elif key.lower() == "ctrl":
+                keyboard.release(Key.ctrl)
+            elif key.lower() == "shift":
+                keyboard.release(Key.shift)
+            elif key.lower() == "space":
+                keyboard.release(Key.space)
+            else:
+                keyboard.release(key.lower())
+
+
+class InputDetectionNext(QThread):
+    def __init__(self):
+        super().__init__()
+        self.powertoys_launcher_window = None
+        self.is_listening = False
+        self.hwnd = None
+        self.buffers = []
+        self.listener = keyboard.Listener(win32_event_filter=self.win32_event_filter)
+        self.listener.start()
+        self.powertoys_launcher_starting = False
+        self.query_box = None
+        global_signals.powertoys_launcher_started.connect(
+            self.powertoys_launcher_started
+        )
+        global_signals.input_detection_listen.connect(self.listen)
+
+    def get_text_from_buffers(self):
+        text = ""
+        for keycode in self.buffers:
+            if winput.vk_code_dict.get(keycode) == "VK_SPACE":
+                text += " "
+            else:
+                key_name = VK_TO_KEY_NAME.get(winput.vk_code_dict.get(keycode))
+                if key_name:
+                    text += key_name.lower()
+        return text
+
+    def win32_event_filter(self, msg, data):
+        if self.is_listening:
+            logger.debug(
+                f"pynput 捕获到按键{winput.vk_code_dict.get(data.vkCode)},flags={data.flags},msg={msg}"
+            )
+            if (
+                data.vkCode not in SPECIAL_KEYS_VKCODE
+                and msg in (256, 257)
+                and data.flags in (0, 128)
+            ):
+                """
+                data.flags == 16 表示 LLKHF_INJECTED ，意味着这个输入是模拟键盘事件
+                data.flags == 0 则为物理按下键
+                """
+                process_name = get_process_name(win32gui.GetForegroundWindow())
+                if self.powertoys_launcher_starting is not True:
+                    if (
+                        "SearchHost.exe" not in process_name
+                        and "PowerToys.PowerLauncher.exe" not in process_name
+                        and process_name != ""
+                    ):
+                        logger.debug(f"{process_name}非搜索或PowerLauncher，线程休眠")
+                        self.sleeping()
+                        return
+
+                if msg == 256 and data.flags == 0:
+                    self.buffers.append(data.vkCode)
+                    if self.powertoys_launcher_starting is False:
+                        self.powertoys_launcher_starting = True
+                        user32 = ctypes.windll.user32
+                        user32.PostMessageW(self.hwnd, 0x0010, 0, 0)
+                        time.sleep(0.5)
+                        open_powertoys_run = OpenPowertoysRun()
+                        open_powertoys_run.run()
+                logger.debug(
+                    f"按键{winput.vk_code_dict.get(data.vkCode)}被阻止,flags={data.flags},msg={msg}"
+                )
+                self.listener.suppress_event()
+
+    def run(self):
+        return
+
+    def powertoys_launcher_started(self, hwnd):
+        logger.debug("powertoys_launcher_started 信号已接收")
+        print(self.powertoys_launcher_starting)
+        if self.powertoys_launcher_starting:
+            if CONFIG.get("settings.autoFocus", True):
+                app = pywinauto.Application(backend="uia").connect(handle=hwnd)
+                self.powertoys_launcher_window = app.window(handle=hwnd)
+                self.query_box = self.powertoys_launcher_window.child_window(
+                    auto_id="QueryTextBox"
+                )
+                if self.query_box.window_text() != "":
+                    self.query_box.set_text("")
+                global_signals.SetForegroundWindow.emit(hwnd)
+                self.query_box.set_focus()
+            time.sleep(0.2)
+            logger.debug(self.buffers)
+            if CONFIG.get("settings.inputMethods", 0) == 0:
+                keyboard = Controller()
+                for keycode in self.buffers:
+                    if winput.vk_code_dict.get(keycode) == "VK_SPACE":
+                        keycode = Key.space
+                    else:
+                        keycode = VK_TO_KEY_NAME.get(
+                            winput.vk_code_dict.get(keycode)
+                        ).lower()
+                    keyboard.type(keycode)
+                    time.sleep(0.03)
+                    logger.debug(f"尝试输入 {keycode}并设置焦点")
+            # 不推荐
+            else:
+                text = self.get_text_from_buffers()
+                if self.query_box is not None:
+                    self.query_box.set_text(text)
+                else:
+                    app = pywinauto.Application(backend="uia").connect(handle=hwnd)
+                    self.powertoys_launcher_window = app.window(handle=hwnd)
+                    self.query_box = self.powertoys_launcher_window.child_window(
+                        auto_id="QueryTextBox"
+                    )
+                    # self.query_box.set_text(text)
+                    self.query_box.type_keys(text)
+            self.sleeping()
+
+    def sleeping(self):
+        logger.debug("线程进入休眠")
+        self.buffers.clear()
+        self.is_listening = False
+        self.powertoys_launcher_starting = False
+
+    def listen(self, hwnd):
+        logger.debug("重新开始监听")
+        self.hwnd = hwnd
+        self.buffers.clear()
+        self.is_listening = True
+        self.powertoys_launcher_starting = False
 
 
 class UpdateCheckerThread(QThread):
@@ -51,6 +245,137 @@ class UpdateCheckerThread(QThread):
             self.check_error.emit(str(e))
 
 
+def get_process_name(hwnd) -> str:
+    """获取窗口所属的进程名"""
+    try:
+        # 获取进程ID
+        _, pid = win32process.GetWindowThreadProcessId(hwnd)
+        # 打开进程
+        handle = win32api.OpenProcess(
+            win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ,
+            False,
+            pid,
+        )
+        # 获取进程名
+        process_name = win32process.GetModuleFileNameEx(handle, 0)
+        win32api.CloseHandle(handle)
+        return process_name
+    except:
+        return ""
+
+
+class WorkingThread(QThread):
+    enable = True
+    hook = None
+    error = Signal()
+
+    def __init__(self):
+        super().__init__()
+        self.powertoys_launcher_hwnd = None
+        self.inputDetection = InputDetectionNext()
+        self.inputDetection.start()
+        # global_signals.input_detection_done.connect(self.input_detection_done)
+
+    @Slot(bool)
+    def working(self, checked):
+        self.enable = checked
+        # 当设置为禁用时，如果线程正在运行，可以考虑重启线程
+        if not checked and self.isRunning():
+            self.cleanup()
+            self.terminate()  # 终止当前线程
+            self.wait()  # 等待线程结束
+        elif checked and not self.isRunning():
+            self.start()  # 如果启用且线程未运行，则启动线程
+
+    # 定义回调函数
+    def win_event_callback(
+        self,
+        hWinEventHook,
+        event,
+        hwnd,
+        idObject,
+        idChild,
+        dwEventThread,
+        dwmsEventTime,
+    ):
+        # 只有在启用状态下才处理事件
+        if not self.enable:
+            return
+
+        if event == win32con.EVENT_SYSTEM_FOREGROUND:
+            logger.debug(
+                f"当前窗口焦点 {win32gui.GetWindowText(hwnd)}:{get_process_name(hwnd)}"
+            )
+            process_name = get_process_name(hwnd)
+            if process_name.find("SearchHost.exe") != -1:
+                if CONFIG.get("settings.detectionMethods") == 0:
+                    global_signals.input_detection_listen.emit(hwnd)
+                    self.powertoys_launcher_hwnd = hwnd
+
+            elif process_name.find("PowerLauncher") != -1:
+                print("PowerLauncher")
+                global_signals.powertoys_launcher_started.emit(hwnd)
+
+    def input_detection_done(self, data):
+        keyboard = Controller()
+        for keycode in data:
+            if winput.vk_code_dict.get(keycode) == "VK_SPACE":
+                keycode = Key.space
+            else:
+                keycode = VK_TO_KEY_NAME.get(winput.vk_code_dict.get(keycode)).lower()
+            print(keycode)
+            keyboard.type(keycode)
+
+    def cleanup(self, signal=None, frame=None):
+        if self.hook:
+            # 取消钩子
+            user32 = ctypes.windll.user32
+            user32.UnhookWinEvent(self.hook)
+
+    # 注册信号处理
+    def run(self):
+        # 如果线程启动时处于禁用状态，则直接返回
+        if not self.enable:
+            return
+
+        WinEventProcType = ctypes.WINFUNCTYPE(
+            None,
+            ctypes.c_void_p,
+            ctypes.c_void_p,
+            ctypes.c_long,
+            ctypes.c_long,
+            ctypes.c_long,
+            ctypes.c_long,
+            ctypes.c_long,
+        )
+        # 设置钩子
+        callback = WinEventProcType(self.win_event_callback)
+        user32 = ctypes.windll.user32
+
+        # 创建事件钩子
+        hook = user32.SetWinEventHook(
+            win32con.EVENT_SYSTEM_FOREGROUND,  # 监听窗口激活事件
+            win32con.EVENT_SYSTEM_FOREGROUND,
+            0,
+            callback,
+            0,
+            0,
+            win32con.WINEVENT_OUTOFCONTEXT,
+        )
+
+        if hook == 0:
+            self.error.emit()
+            self.cleanup()
+            self.terminate()  # 终止当前线程
+            self.wait()  # 等待线程结束
+
+        # 消息循环
+        msg = wintypes.MSG()
+        while user32.GetMessageW(ctypes.byref(msg), 0, 0, 0) != 0 and self.enable:
+            user32.TranslateMessage(ctypes.byref(msg))
+            user32.DispatchMessageW(ctypes.byref(msg))
+
+
 class Window(FluentWindow):
     """主界面"""
 
@@ -61,6 +386,7 @@ class Window(FluentWindow):
         self.setWindowTitle("PowerToysRunEnhance")
         self.splashScreen = SplashScreen(self.windowIcon(), self)
         self.splashScreen.setIconSize(QSize(102, 102))
+        # global_signals.SetForegroundWindow.connect(self.SetForegroundWindow)
 
         # 2. 在创建其他子页面前先显示主界面
         self.show()
@@ -71,13 +397,22 @@ class Window(FluentWindow):
         loop.exec()
 
         self.homeInterface = MainInterface("Main Interface", __VERSION__, self)
-        self.settingInterface = SettingInterface("Setting Interface", self)
 
+        self.settingInterface = SettingInterface("Setting Interface", self)
         # 创建更新检查线程
         self.update_checker = UpdateCheckerThread()
         self.update_checker.update_found.connect(self.on_update_found)
         self.update_checker.update_not_found.connect(self.on_update_not_found)
         self.update_checker.check_error.connect(self.on_check_error)
+
+        self.mainWork = WorkingThread()
+        self.mainWork.start()
+        self.mainWork.error.connect(self.on_main_working_thread_error)
+        self.homeInterface.enableCard.enable.connect(self.mainWork.working)
+
+        # 程序关闭时清理 Hook
+        signal.signal(signal.SIGINT, self.mainWork.cleanup)
+        signal.signal(signal.SIGTERM, self.mainWork.cleanup)
 
         self.initNavigation()
         self.splashScreen.finish()
@@ -166,6 +501,17 @@ class Window(FluentWindow):
         )
         # 启动更新检查线程
         self.update_checker.start()
+
+    def on_main_working_thread_error(self):
+        self.homeInterface.enableCard.switchButton.setChecked(False)
+        errorMessageBox = MessageBox(
+            "Hook 注册失败",
+            "Hook 注册失败",
+            self,
+        )
+        errorMessageBox.yesButton.setText("哦")
+        errorMessageBox.cancelButton.setText("哦")
+        errorMessageBox.exec()
 
 
 if __name__ == "__main__":

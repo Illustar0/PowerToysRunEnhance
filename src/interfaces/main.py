@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from qfluentwidgets import (
     CaptionLabel,
@@ -12,8 +12,6 @@ from qfluentwidgets import (
 )
 
 from .base import BaseCard
-
-is_enable = True
 
 
 class Logo(QWidget):
@@ -78,27 +76,23 @@ class VersionCard(BaseCard):
 class EnableCard(BaseCard):
     """功能 设置卡片"""
 
+    enable = Signal(bool)
+
     def __init__(
         self,
         title: str,
         content: str,
         icon: FluentIcon,
         default_value: bool,
-        extra_signal_params=None,
     ):
         super().__init__(title, content, icon)
-        self.extra_signal_params = extra_signal_params
         # 创建快捷键编辑器
 
-        switchButton = SwitchButton(self)
-        switchButton.setChecked(default_value)
-        switchButton.checkedChanged.connect(self.on_checked_changed)
-        self.hBoxLayout.addWidget(switchButton)
+        self.switchButton = SwitchButton(self)
+        self.switchButton.setChecked(default_value)
+        self.switchButton.checkedChanged.connect(self.enable)
+        self.hBoxLayout.addWidget(self.switchButton)
         self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-
-    def on_checked_changed(self, checked):
-        global is_enable
-        is_enable = checked
 
 
 class MainInterface(QWidget):
@@ -125,21 +119,21 @@ class MainInterface(QWidget):
         # 添加弹簧，将 AboutCard 推到底部
         self.vBoxLayout.addStretch()
         # 添加 EnableCard
-        self.vBoxLayout.addWidget(
-            EnableCard(
-                "替换",
-                "是否将 Windows Search 替换为 PowerToys Run",
-                FluentIcon.PLAY,
-                is_enable,
-            )
+        # 暴露 EnableCard
+        self.enableCard = EnableCard(
+            "替换",
+            "是否将 Windows Search 替换为 PowerToys Run",
+            FluentIcon.POWER_BUTTON,
+            True,
         )
+        self.vBoxLayout.addWidget(self.enableCard)
         # 添加 VersionCard
         self.vBoxLayout.addWidget(
             VersionCard(
                 "版本更新",
                 f"当前版本：{version}",
                 "检查更新",
-                FluentIcon.CLOUD_DOWNLOAD,
+                FluentIcon.UPDATE,
                 on_check_update=self.parent().on_check_update_button_clicked,
             )
         )
