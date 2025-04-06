@@ -19,9 +19,11 @@ from PySide6.QtCore import (
     QTimer,
     Slot,
     QObject,
+    QCoreApplication,
+    Qt,
 )
-from PySide6.QtGui import QIcon, QDesktopServices
-from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon, QDesktopServices, QAction
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 from loguru import logger
 from pynput import keyboard
 from pynput.keyboard import Controller, Key
@@ -418,6 +420,52 @@ class Window(FluentWindow):
         self.splashScreen.finish()
         self.setWindowTitle("PowerToysRunEnhance - Home")
         self.stackedWidget.currentChanged.connect(self.currentWidgetChanged)
+        self.setup_system_tray()
+
+    def setup_system_tray(self):
+        # 创建托盘图标
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(
+            QIcon("./resources/logo.png")
+        )  # 设置图标，需替换为你自己的图标路径
+        self.tray_icon.setToolTip("PowerToysRunEnhance")
+
+        # 创建托盘菜单
+        tray_menu = QMenu()
+
+        # 添加菜单项
+        show_action = QAction("显示", self)
+        show_action.triggered.connect(self.show_window)
+
+        exit_action = QAction("退出", self)
+        exit_action.triggered.connect(QApplication.quit)
+
+        tray_menu.addAction(show_action)
+        tray_menu.addAction(exit_action)
+
+        # 设置托盘菜单
+        self.tray_icon.setContextMenu(tray_menu)
+
+        # 连接托盘图标的激活信号
+        self.tray_icon.activated.connect(self.on_tray_icon_activated)
+
+        # 显示托盘图标
+        self.tray_icon.show()
+
+    @Slot(QSystemTrayIcon.ActivationReason)
+    def on_tray_icon_activated(self, reason):
+        # 当双击托盘图标时
+        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
+            self.show_window()
+
+    def show_window(self):
+        # 显示并激活窗口
+        self.show()
+        self.setWindowState(
+            self.windowState() & ~Qt.WindowState.WindowMinimized
+            | Qt.WindowState.WindowActive
+        )
+        self.activateWindow()
 
     def currentWidgetChanged(self):
         self.currentInterface = self.stackedWidget.currentWidget()
@@ -512,6 +560,11 @@ class Window(FluentWindow):
         errorMessageBox.yesButton.setText("哦")
         errorMessageBox.cancelButton.setText("哦")
         errorMessageBox.exec()
+
+    def closeEvent(self, event):
+        # 忽略退出事件，而是隐藏到托盘
+        event.ignore()
+        self.hide()
 
 
 if __name__ == "__main__":
