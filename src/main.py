@@ -22,8 +22,8 @@ from PySide6.QtCore import (
     QCoreApplication,
     Qt,
 )
-from PySide6.QtGui import QIcon, QDesktopServices, QAction
-from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
+from PySide6.QtGui import QIcon, QDesktopServices
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon
 from loguru import logger
 from pynput import keyboard
 from pynput.keyboard import Controller, Key
@@ -35,6 +35,8 @@ from qfluentwidgets import (
     FlyoutAnimationType,
     NavigationAvatarWidget,
     SplashScreen,
+    SystemTrayMenu,
+    Action,
 )
 from qfluentwidgets import (
     NavigationItemPosition,
@@ -57,6 +59,7 @@ class GlobalSignals(QObject):
     input_detection_done = Signal(object)
     input_detection_listen = Signal(object)
     SetForegroundWindow = Signal(object)
+    enable_status_changed = Signal(bool)
 
 
 global_signals = GlobalSignals()
@@ -276,7 +279,7 @@ class WorkingThread(QThread):
         self.powertoys_launcher_hwnd = None
         self.inputDetection = InputDetectionNext()
         self.inputDetection.start()
-        # global_signals.input_detection_done.connect(self.input_detection_done)
+        global_signals.enable_status_changed.connect(self.working)
 
     @Slot(bool)
     def working(self, checked):
@@ -378,6 +381,12 @@ class WorkingThread(QThread):
             user32.DispatchMessageW(ctypes.byref(msg))
 
 
+class SystemTrayIcon(QSystemTrayIcon):
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+        self.setIcon(parent.windowIcon())
+
+
 class Window(FluentWindow):
     """主界面"""
 
@@ -388,7 +397,7 @@ class Window(FluentWindow):
         self.setWindowTitle("PowerToysRunEnhance")
         self.splashScreen = SplashScreen(self.windowIcon(), self)
         self.splashScreen.setIconSize(QSize(102, 102))
-        # global_signals.SetForegroundWindow.connect(self.SetForegroundWindow)
+        global_signals.enable_status_changed.connect(self.enable_status)
 
         # 2. 在创建其他子页面前先显示主界面
         self.show()
@@ -422,6 +431,11 @@ class Window(FluentWindow):
         self.stackedWidget.currentChanged.connect(self.currentWidgetChanged)
         self.setup_system_tray()
 
+    @Slot(bool)
+    def enable_status(self, checked):
+        logger.debug(checked)
+        self.homeInterface.enableCard.switchButton.setChecked(checked)
+
     def setup_system_tray(self):
         # 创建托盘图标
         self.tray_icon = QSystemTrayIcon(self)
@@ -431,26 +445,41 @@ class Window(FluentWindow):
         self.tray_icon.setToolTip("PowerToysRunEnhance")
 
         # 创建托盘菜单
-        tray_menu = QMenu()
+        self.menu = SystemTrayMenu(parent=self)
+        self.enableAction = Action(
+            "✓ 启用",
+            checkable=True,
+            checked=True,
+            triggered=self.on_enable_checkbox_changed,
+        )
+        self.menu.addActions(
+            [
+                self.enableAction,
+                Action("     显示主界面", triggered=self.show_window),
+            ]
+        )
+        self.menu.addSeparator()
+        self.menu.addActions(
+            [
+                Action("     退出", triggered=QApplication.quit),
+            ]
+        )
 
-        # 添加菜单项
-        show_action = QAction("显示", self)
-        show_action.triggered.connect(self.show_window)
-
-        exit_action = QAction("退出", self)
-        exit_action.triggered.connect(QApplication.quit)
-
-        tray_menu.addAction(show_action)
-        tray_menu.addAction(exit_action)
-
-        # 设置托盘菜单
-        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.setContextMenu(self.menu)
 
         # 连接托盘图标的激活信号
         self.tray_icon.activated.connect(self.on_tray_icon_activated)
 
         # 显示托盘图标
         self.tray_icon.show()
+
+    def on_enable_checkbox_changed(self):
+        if self.enableAction.isChecked():
+            self.enableAction.setText("✓ 启用")
+            global_signals.enable_status_changed.emit(True)
+        else:
+            self.enableAction.setText("✗ 启用")
+            global_signals.enable_status_changed.emit(False)
 
     @Slot(QSystemTrayIcon.ActivationReason)
     def on_tray_icon_activated(self, reason):
