@@ -1,8 +1,10 @@
 import ctypes
+import os
 import signal
 import sys
 import time
 from ctypes import wintypes
+
 import httpx
 import pywinauto
 import win32api
@@ -19,8 +21,8 @@ from PySide6.QtCore import (
     QTimer,
     Slot,
     QObject,
-    QCoreApplication,
     Qt,
+    QLocale,
 )
 from PySide6.QtGui import QIcon, QDesktopServices
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon
@@ -49,9 +51,12 @@ from interfaces.setting import (
     CONFIG,
     SPECIAL_KEYS_VKCODE,
     VK_TO_KEY_NAME,
+    setting_event_bus,
 )
 
 __VERSION__ = "0.1.0"
+
+from language import TranslatorManager, LANGUAGE_MAP
 
 
 class GlobalSignals(QObject):
@@ -169,7 +174,6 @@ class InputDetectionNext(QThread):
 
     def powertoys_launcher_started(self, hwnd):
         logger.debug("powertoys_launcher_started 信号已接收")
-        print(self.powertoys_launcher_starting)
         if self.powertoys_launcher_starting:
             if CONFIG.get("settings.autoFocus", True):
                 app = pywinauto.Application(backend="uia").connect(handle=hwnd)
@@ -284,6 +288,7 @@ class WorkingThread(QThread):
     @Slot(bool)
     def working(self, checked):
         self.enable = checked
+        """
         # 当设置为禁用时，如果线程正在运行，可以考虑重启线程
         if not checked and self.isRunning():
             self.cleanup()
@@ -291,6 +296,7 @@ class WorkingThread(QThread):
             self.wait()  # 等待线程结束
         elif checked and not self.isRunning():
             self.start()  # 如果启用且线程未运行，则启动线程
+        """
 
     # 定义回调函数
     def win_event_callback(
@@ -318,7 +324,6 @@ class WorkingThread(QThread):
                     self.powertoys_launcher_hwnd = hwnd
 
             elif process_name.find("PowerLauncher") != -1:
-                print("PowerLauncher")
                 global_signals.powertoys_launcher_started.emit(hwnd)
 
     def input_detection_done(self, data):
@@ -328,7 +333,6 @@ class WorkingThread(QThread):
                 keycode = Key.space
             else:
                 keycode = VK_TO_KEY_NAME.get(winput.vk_code_dict.get(keycode)).lower()
-            print(keycode)
             keyboard.type(keycode)
 
     def cleanup(self, signal=None, frame=None):
@@ -398,6 +402,7 @@ class Window(FluentWindow):
         self.splashScreen = SplashScreen(self.windowIcon(), self)
         self.splashScreen.setIconSize(QSize(102, 102))
         global_signals.enable_status_changed.connect(self.enable_status)
+        setting_event_bus.language_changed.connect(self.change_language)
 
         # 2. 在创建其他子页面前先显示主界面
         self.show()
@@ -410,6 +415,12 @@ class Window(FluentWindow):
         self.homeInterface = MainInterface("Main Interface", __VERSION__, self)
 
         self.settingInterface = SettingInterface("Setting Interface", self)
+        if TranslatorManager.instance().get_current_language() is not None:
+            self.settingInterface.languageCard.comboBox.setCurrentText(
+                LANGUAGE_MAP[TranslatorManager.instance().get_current_language()]
+            )
+        else:
+            self.settingInterface.languageCard.comboBox.setCurrentText("English")
         # 创建更新检查线程
         self.update_checker = UpdateCheckerThread()
         self.update_checker.update_found.connect(self.on_update_found)
@@ -447,7 +458,7 @@ class Window(FluentWindow):
         # 创建托盘菜单
         self.menu = SystemTrayMenu(parent=self)
         self.enableAction = Action(
-            "✓ 启用",
+            self.tr("✓ Enable"),  # "✓ 启用"
             checkable=True,
             checked=True,
             triggered=self.on_enable_checkbox_changed,
@@ -455,13 +466,19 @@ class Window(FluentWindow):
         self.menu.addActions(
             [
                 self.enableAction,
-                Action("     显示主界面", triggered=self.show_window),
+                Action(
+                    self.tr("     Show Main Window"),  # "     显示主界面"
+                    triggered=self.show_window,
+                ),
             ]
         )
         self.menu.addSeparator()
         self.menu.addActions(
             [
-                Action("     退出", triggered=QApplication.quit),
+                Action(
+                    self.tr("     Exit"),  # "     退出"
+                    triggered=self.quit_application,
+                ),
             ]
         )
 
@@ -475,10 +492,10 @@ class Window(FluentWindow):
 
     def on_enable_checkbox_changed(self):
         if self.enableAction.isChecked():
-            self.enableAction.setText("✓ 启用")
+            self.enableAction.setText(self.tr("✓ Enable"))  # "✓ 启用"
             global_signals.enable_status_changed.emit(True)
         else:
-            self.enableAction.setText("✗ 启用")
+            self.enableAction.setText(self.tr("✗ Enable"))  # "✗ 启用"
             global_signals.enable_status_changed.emit(False)
 
     @Slot(QSystemTrayIcon.ActivationReason)
@@ -505,15 +522,19 @@ class Window(FluentWindow):
 
     def showMessageBox(self):
         w = MessageBox(
-            "支持作者🥰",
-            "个人开发不易，如果这个项目帮助到了您，可以考虑请作者喝一瓶快乐水🥤。您的支持就是作者开发和维护项目的动力🚀",
+            self.tr("Support the Author🥰"),  # "支持作者🥰"
+            self.tr(
+                "Personal development is not easy. If this project has helped you, please consider buying the author a bottle of happy water🥤. Your support is the motivation for the author to develop and maintain the project🚀"  # "个人开发不易，如果这个项目帮助到了您，可以考虑请作者喝一瓶快乐水🥤。您的支持就是作者开发和维护项目的动力🚀"
+            ),
             self,
         )
-        w.yesButton.setText("Go🥰")
-        w.cancelButton.setText("Next time😭")
+        w.yesButton.setText(self.tr("Go🥰"))  # "Go🥰"
+        w.cancelButton.setText(self.tr("Maybe Next Time😭"))  # "下次一定😭"
 
         if w.exec():
-            QDesktopServices.openUrl(QUrl("https://afdian.com/a/Illustar0"))
+            QDesktopServices.openUrl(
+                QUrl(self.tr("https://afdian.com/a/Illustar0"))
+            )  # "https://afdian.com/a/Illustar0"
 
     def initNavigation(self):
         # 添加子界面到导航
@@ -541,12 +562,16 @@ class Window(FluentWindow):
 
     def on_update_found(self, current_version, latest_version):
         update_message = MessageBox(
-            "检测到更新",
-            f"当前版本：{current_version}\n最新版本：{latest_version}",
+            self.tr("Update Detected"),  # "检测到更新"
+            self.tr(
+                "Current Version: {current_version}\nLatest Version: {latest_version}"
+            ).format(
+                current_version=current_version, latest_version=latest_version
+            ),  # "当前版本：{current_version}\n最新版本：{latest_version}"
             self,
         )
-        update_message.yesButton.setText("更新")
-        update_message.cancelButton.setText("取消")
+        update_message.yesButton.setText(self.tr("Update"))  # "更新"
+        update_message.cancelButton.setText(self.tr("Cancel"))  # "取消"
         if update_message.exec():
             QDesktopServices.openUrl(
                 QUrl("https://github.com/Illustar0/PowerToysRunEnhance/releases")
@@ -555,8 +580,8 @@ class Window(FluentWindow):
     def on_update_not_found(self):
         Flyout.create(
             icon=InfoBarIcon.SUCCESS,
-            title="检查完成",
-            content="当前已是最新版本",
+            title=self.tr("Check Complete"),  # "检查完成"
+            content=self.tr("You are using the latest version"),  # "当前已是最新版本"
             target=self,
             parent=self,
             isClosable=True,
@@ -564,13 +589,22 @@ class Window(FluentWindow):
         )
 
     def on_check_error(self, error_msg):
-        MessageBox("检查更新失败", f"错误信息：{error_msg}", self).exec()
+        messagebox = MessageBox(
+            self.tr("Update Check Failed"),  # "检查更新失败"
+            self.tr("Error Message: {error_msg}").format(
+                error_msg=error_msg
+            ),  # f"错误信息：{error_msg}"
+            self,
+        )
+        messagebox.yesButton.setText(self.tr("OK"))  # "确定"
+        messagebox.cancelButton.hide()
+        messagebox.exec()
 
     def on_check_update_button_clicked(self) -> None:
         Flyout.create(
             icon=InfoBarIcon.INFORMATION,
-            title="检查更新中",
-            content="正在检查更新...",
+            title=self.tr("Checking for Updates"),  # "检查更新中"
+            content=self.tr("Checking for updates..."),  # "正在检查更新..."
             target=self,
             parent=self,
             isClosable=True,
@@ -582,22 +616,75 @@ class Window(FluentWindow):
     def on_main_working_thread_error(self):
         self.homeInterface.enableCard.switchButton.setChecked(False)
         errorMessageBox = MessageBox(
-            "Hook 注册失败",
-            "Hook 注册失败",
+            self.tr("Hook Failed"),  # "Hook 失败"
+            self.tr("Hook failed, the program will exit"),  # "Hook 失败，程序将退出"
             self,
         )
-        errorMessageBox.yesButton.setText("哦")
-        errorMessageBox.cancelButton.setText("哦")
+        errorMessageBox.yesButton.setText(self.tr("OK"))  # "确定"
+        errorMessageBox.cancelButton.hide()
         errorMessageBox.exec()
+        exit(0)
 
     def closeEvent(self, event):
         # 忽略退出事件，而是隐藏到托盘
         event.ignore()
         self.hide()
 
+    def change_language(self, language):
+        translator_manager = TranslatorManager.instance()
+        # translator_manager.switch_translator(language)
+        messagebox = MessageBox(
+            self.tr("Restart Application"),  # "重启应用"
+            self.tr(
+                "Switching language requires restarting the application. Do you want to continue?"
+            ),  # "切换语言需要重启应用，是否继续？"
+            self,
+        )
+        messagebox.yesButton.setText(self.tr("OK"))  # "确定"
+        messagebox.cancelButton.setText(self.tr("Cancel"))  # "取消"
+        if messagebox.exec():
+            translator_manager.switch_translator(language)
+            # 在重启前先隐藏并移除托盘图标
+            if hasattr(self, "tray_icon") and self.tray_icon is not None:
+                self.tray_icon.hide()
+                self.tray_icon.setParent(None)
+            # 重启应用
+            os.execl(sys.executable, sys.executable, *sys.argv)
+
+    def quit_application(self):
+        # 在退出前先隐藏并移除托盘图标
+        if hasattr(self, "tray_icon") and self.tray_icon is not None:
+            self.tray_icon.hide()
+            self.tray_icon.setParent(None)
+            del self.tray_icon
+        sys.exit()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    translator_manager = TranslatorManager.instance()
+    translator_load_failed = None
+    if CONFIG.get("settings.language") is not None:
+        if (
+            translator_manager.switch_translator(CONFIG.get("settings.language"))
+            is not True
+        ):
+            if (
+                translator_manager.switch_translator(QLocale.system().name())
+                is not True
+            ):
+                if translator_manager.switch_translator("en_US") is not True:
+                    translator_load_failed = True
     w = Window()
+
+    if translator_load_failed:
+        messagebox = MessageBox(
+            "Translation file loading failed",
+            "The system will revert to the default language, Simplified Chinese. Please check if the program is complete.",
+            w,
+        )
+        messagebox.yesButton.setText("OK")
+        messagebox.cancelButton.hide()
+        messagebox.exec()
     w.show()
     app.exec()

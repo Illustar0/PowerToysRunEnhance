@@ -37,7 +37,7 @@ class Logo(QWidget):
 
 
 class AboutCard(BaseCard):
-    """关于 卡片"""
+    """About Card"""
 
     def __init__(
         self,
@@ -55,7 +55,7 @@ class AboutCard(BaseCard):
 
 
 class VersionCard(BaseCard):
-    """版本更新 卡片"""
+    """Version Update Card"""
 
     def __init__(
         self,
@@ -74,7 +74,7 @@ class VersionCard(BaseCard):
 
 
 class EnableCard(BaseCard):
-    """功能 设置卡片"""
+    """Function Setting Card"""
 
     enable = Signal(bool)
 
@@ -111,7 +111,9 @@ class MainInterface(QWidget):
             Logo(
                 "./resources/logo.png",
                 "PowerToysRunEnhance",
-                "A small tool that non-invasively replaces Windows Search with PowerToys Run.",
+                self.tr(
+                    "A non-intrusive tool that replaces Windows Search with PowerToys Run"
+                ),  # "一款非侵入式将 Windows Search 替换为 PowerToys Run 的小工具"
                 self,
             )
         )
@@ -121,8 +123,10 @@ class MainInterface(QWidget):
         # 添加 EnableCard
         # 暴露 EnableCard
         self.enableCard = EnableCard(
-            "替换",
-            "是否将 Windows Search 替换为 PowerToys Run",
+            self.tr("Replace"),  # "替换"
+            self.tr(
+                "Whether to replace Windows Search with PowerToys Run"
+            ),  # "是否将 Windows Search 替换为 PowerToys Run"
             FluentIcon.POWER_BUTTON,
             True,
         )
@@ -130,9 +134,11 @@ class MainInterface(QWidget):
         # 添加 VersionCard
         self.vBoxLayout.addWidget(
             VersionCard(
-                "版本更新",
-                f"当前版本：{version}",
-                "检查更新",
+                self.tr("Version Update"),  # "版本更新"
+                self.tr("Current Version: {version}").format(
+                    version=version
+                ),  # "当前版本：{version}"
+                self.tr("Check for Updates"),  # "检查更新"
                 FluentIcon.UPDATE,
                 on_check_update=self.parent().on_check_update_button_clicked,
             )
@@ -140,7 +146,7 @@ class MainInterface(QWidget):
         # 添加 AboutCard
         self.vBoxLayout.addWidget(
             AboutCard(
-                "关于",
+                self.tr("About"),  # "关于"
                 "Copyright © 2025 Illustar0.",
                 "Github",
                 "https://github.com/Illustar0/PowerToysRunEnhance",

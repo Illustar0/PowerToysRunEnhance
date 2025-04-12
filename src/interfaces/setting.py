@@ -191,6 +191,16 @@ KEY_NAME_TO_VK = {k: vk for vk, k in VK_TO_KEY_NAME.items()}
 VK_TO_VK_CODE = {vk: vkc for vkc, vk in winput.vk_code_dict.items()}
 
 
+class GlobalEventBus(QObject):
+    """全局事件总线"""
+
+    # 定义信号（可带参数）
+    language_changed = Signal(str)  # 示例：传递字符串消息
+
+
+setting_event_bus = GlobalEventBus()
+
+
 class BaseConfig(QObject):
     configChanged = Signal(str, object)
 
@@ -236,6 +246,8 @@ class Config(BaseConfig):
     def on_config_updated(self, params):
         if isinstance(params, tuple):
             self.set(params[1], params[0])
+            if params[1] == "settings.language":
+                setting_event_bus.language_changed.emit(params[0])
 
 
 CONFIG = Config("config.toml")
@@ -269,8 +281,10 @@ class ShortcutCard(BaseCard):
 
                 # 初始化布局
                 self.hBoxLayout = QHBoxLayout()
-                self.titleLabel = BodyLabel("快捷键设置", self)
-                self.tipLabel = CaptionLabel("PowerToys Run 的快捷键设置", self)
+                self.titleLabel = BodyLabel(self.tr("Shortcut Settings"), self)
+                self.tipLabel = CaptionLabel(
+                    self.tr("Shortcut to invoke PowerToys Run"), self
+                )
                 self.tipLabel.setTextColor("#606060", "#d2d2d2")
 
                 # 初始化按钮
@@ -494,7 +508,7 @@ class DropDownCard(BaseCard):
         content: str,
         icon: FluentIcon,
         choices: list[str],
-        default_value: int,
+        default_value: int | str,
         extra_signal_params=None,
     ):
         super().__init__(title, content, icon)
@@ -502,7 +516,10 @@ class DropDownCard(BaseCard):
 
         self.comboBox = ComboBox(self)
         self.comboBox.addItems(choices)
-        self.comboBox.setCurrentIndex(default_value)
+        if isinstance(default_value, str):
+            self.comboBox.setCurrentText(default_value)
+        else:
+            self.comboBox.setCurrentIndex(default_value)
         self.comboBox.currentIndexChanged.connect(self.on_checked_changed)
         self.hBoxLayout.addWidget(self.comboBox)
         self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
@@ -514,6 +531,40 @@ class DropDownCard(BaseCard):
             )
         else:
             self.configUpdated.emit(self.comboBox.currentIndex())
+
+
+class LanguageCard(BaseCard):
+    configUpdated = Signal(object)
+
+    def __init__(
+        self,
+        title: str,
+        content: str,
+        icon: FluentIcon,
+        choices: list[str],
+        default_value: int | str,
+        extra_signal_params=None,
+    ):
+        super().__init__(title, content, icon)
+        self.extra_signal_params = extra_signal_params
+
+        self.comboBox = ComboBox(self)
+        self.comboBox.addItems(choices)
+        if isinstance(default_value, str):
+            self.comboBox.setCurrentText(default_value)
+        else:
+            self.comboBox.setCurrentIndex(default_value)
+        self.comboBox.currentIndexChanged.connect(self.on_checked_changed)
+        self.hBoxLayout.addWidget(self.comboBox)
+        self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+    def on_checked_changed(self):
+        if self.extra_signal_params:
+            self.configUpdated.emit(
+                (self.comboBox.currentText(), self.extra_signal_params)
+            )
+        else:
+            self.configUpdated.emit(self.comboBox.currentText())
 
 
 class WaitTimeSetCard(BaseCard):
@@ -553,31 +604,47 @@ class SettingInterface(QWidget):
         self.vBoxLayout.setContentsMargins(10, 20, 10, 20)
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.vBoxLayout)  # 设置主布局
-        self.vBoxLayout.addWidget(TitleLabel("设置", self))
+        self.vBoxLayout.addWidget(TitleLabel(self.tr("Settings"), self))
         self.vBoxLayout.addWidget(FluentDivider())
+        self.languageCard = LanguageCard(
+            title=self.tr("Language"),
+            content=self.tr("Language used by the GUI"),
+            icon=FluentIcon.LANGUAGE,
+            choices=["English", "简体中文", "日本語"],
+            default_value=CONFIG.get("settings.language"),
+            extra_signal_params="settings.language",
+        )
+        self.languageCard.configUpdated.connect(CONFIG.on_config_updated)
+        self.vBoxLayout.addWidget(self.languageCard)
         detectionCard = DropDownCard(
-            title="检测方法",
-            content="触发拉起 PowerToys Run 的方法",
+            title=self.tr("Detection Method"),
+            content=self.tr("Method to trigger PowerToys Run"),
             icon=FluentIcon.VIEW,
-            choices=["输入检测", "文本框检测 (不推荐)"],
+            choices=[
+                self.tr("Input Detection"),
+                self.tr("Textbox Detection (Deprecated)"),
+            ],
             default_value=CONFIG.get("settings.detectionMethods"),
             extra_signal_params="settings.detectionMethods",
         )
         detectionCard.configUpdated.connect(CONFIG.on_config_updated)
         self.vBoxLayout.addWidget(detectionCard)
         inputCard = DropDownCard(
-            title="输入方法",
-            content="向 PowerToys Run 输入文本的方法",
+            title=self.tr("Input Method"),
+            content=self.tr("Method to input text to PowerToys Run"),
             icon=FluentIcon.PENCIL_INK,
-            choices=["键盘模拟", "文本框修改 (不推荐)"],
+            choices=[
+                self.tr("Keyboard Simulation"),
+                self.tr("Textbox Modification (Deprecated)"),
+            ],
             default_value=CONFIG.get("settings.inputMethods"),
             extra_signal_params="settings.inputMethods",
         )
         inputCard.configUpdated.connect(CONFIG.on_config_updated)
         self.vBoxLayout.addWidget(inputCard)
         waitTimeSetCard = WaitTimeSetCard(
-            title="等待时间",
-            content="等待搜索窗口完全关闭的时间",
+            title=self.tr("Wait Time"),
+            content=self.tr("Time to wait for the search window to fully close"),
             icon=FluentIcon.STOP_WATCH,
             range=(0, 10),
             default_value=CONFIG.get("settings.waitTime"),
@@ -586,8 +653,8 @@ class SettingInterface(QWidget):
         waitTimeSetCard.configUpdated.connect(CONFIG.on_config_updated)
         self.vBoxLayout.addWidget(waitTimeSetCard)
         shortcutCard = ShortcutCard(
-            title="PowerToys Run 快捷键",
-            content="PowerToys Run 的快捷键设置",
+            title=self.tr("PowerToys Run Shortcut"),
+            content=self.tr("Shortcut to invoke PowerToys Run"),
             icon=FluentIcon.LABEL,
             default_value=CONFIG.get("settings.powerToysRunShortCut"),
             extra_signal_params="settings.powerToysRunShortCut",
@@ -596,8 +663,10 @@ class SettingInterface(QWidget):
         self.vBoxLayout.addWidget(FluentDivider())
         self.vBoxLayout.addWidget(shortcutCard)
         autoFocusCard = AutoFocusCard(
-            title="自动设置焦点",
-            content="是否自动为 PowerToys Run 窗口设置焦点",
+            title=self.tr("Auto Focus"),
+            content=self.tr(
+                "(Deprecated) Whether to automatically set focus to PowerToys Run window"
+            ),
             icon=FluentIcon.TAG,
             default_value=CONFIG.get("settings.autoFocus"),
             extra_signal_params="settings.autoFocus",
