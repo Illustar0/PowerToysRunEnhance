@@ -4,269 +4,288 @@
 <context>
     <name>MainInterface</name>
     <message>
-        <location filename="../interfaces/main.py" line="115"/>
+        <location filename="../interfaces/main.py" line="116"/>
         <source>A non-intrusive tool that replaces Windows Search with PowerToys Run</source>
-        <translation type="finished">A non-intrusive tool that replaces Windows Search with PowerToys Run</translation>
-    </message>
-    <message>
-        <location filename="../interfaces/main.py" line="125"/>
-        <source>Replace</source>
-        <translation type="finished">Replace</translation>
+        <translation>A non-intrusive tool that replaces Windows Search with PowerToys Run</translation>
     </message>
     <message>
         <location filename="../interfaces/main.py" line="126"/>
+        <source>Replace</source>
+        <translation>Replace</translation>
+    </message>
+    <message>
+        <location filename="../interfaces/main.py" line="129"/>
         <source>Whether to replace Windows Search with PowerToys Run</source>
-        <translation type="finished">Whether to replace Windows Search with PowerToys Run</translation>
+        <translation>Whether to replace Windows Search with PowerToys Run</translation>
     </message>
     <message>
-        <location filename="../interfaces/main.py" line="134"/>
+        <location filename="../interfaces/main.py" line="137"/>
         <source>Version Update</source>
-        <translation type="finished">Version Update</translation>
+        <translation>Version Update</translation>
     </message>
     <message>
-        <location filename="../interfaces/main.py" line="135"/>
+        <location filename="../interfaces/main.py" line="138"/>
         <source>Current Version: {version}</source>
-        <translation type="finished">Current Version: {version}</translation>
+        <translation>Current Version: {version}</translation>
     </message>
     <message>
-        <location filename="../interfaces/main.py" line="136"/>
+        <location filename="../interfaces/main.py" line="141"/>
         <source>Check for Updates</source>
-        <translation type="finished">Check for Updates</translation>
+        <translation>Check for Updates</translation>
     </message>
     <message>
-        <location filename="../interfaces/main.py" line="144"/>
+        <location filename="../interfaces/main.py" line="149"/>
         <source>About</source>
-        <translation type="finished">About</translation>
+        <translation>About</translation>
     </message>
 </context>
 <context>
     <name>SettingInterface</name>
     <message>
-        <location filename="../interfaces/setting.py" line="604"/>
-        <source>Settings</source>
-        <translation type="finished">Settings</translation>
-    </message>
-    <message>
-        <location filename="../interfaces/setting.py" line="607"/>
-        <source>Language</source>
-        <translation type="finished">Language</translation>
-    </message>
-    <message>
         <location filename="../interfaces/setting.py" line="608"/>
+        <source>Settings</source>
+        <translation>Settings</translation>
+    </message>
+    <message>
+        <location filename="../interfaces/setting.py" line="611"/>
+        <source>Language</source>
+        <translation>Language</translation>
+    </message>
+    <message>
+        <location filename="../interfaces/setting.py" line="612"/>
         <source>Language used by the GUI</source>
-        <translation type="finished">Language used by the GUI</translation>
-    </message>
-    <message>
-        <location filename="../interfaces/setting.py" line="617"/>
-        <source>Detection Method</source>
-        <translation type="finished">Detection Method</translation>
-    </message>
-    <message>
-        <location filename="../interfaces/setting.py" line="618"/>
-        <source>Method to trigger PowerToys Run</source>
-        <translation type="finished">Method to trigger PowerToys Run</translation>
-    </message>
-    <message>
-        <location filename="../interfaces/setting.py" line="620"/>
-        <source>Input Detection</source>
-        <translation type="finished">Input Detection</translation>
+        <translation>Language used by the GUI</translation>
     </message>
     <message>
         <location filename="../interfaces/setting.py" line="621"/>
+        <source>Detection Method</source>
+        <translation>Detection Method</translation>
+    </message>
+    <message>
+        <location filename="../interfaces/setting.py" line="622"/>
+        <source>Method to trigger PowerToys Run</source>
+        <translation>Method to trigger PowerToys Run</translation>
+    </message>
+    <message>
+        <location filename="../interfaces/setting.py" line="625"/>
+        <source>Input Detection</source>
+        <translation>Input Detection</translation>
+    </message>
+    <message>
+        <location filename="../interfaces/setting.py" line="626"/>
         <source>Textbox Detection (Deprecated)</source>
-        <translation type="finished">Textbox Detection (Deprecated)</translation>
+        <translation>Textbox Detection (Deprecated)</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="628"/>
+        <location filename="../interfaces/setting.py" line="634"/>
         <source>Input Method</source>
-        <translation type="finished">Input Method</translation>
+        <translation>Input Method</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="629"/>
+        <location filename="../interfaces/setting.py" line="635"/>
         <source>Method to input text to PowerToys Run</source>
-        <translation type="finished">Method to input text to PowerToys Run</translation>
+        <translation>Method to input text to PowerToys Run</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="631"/>
+        <location filename="../interfaces/setting.py" line="638"/>
         <source>Keyboard Simulation</source>
-        <translation type="finished">Keyboard Simulation</translation>
-    </message>
-    <message>
-        <location filename="../interfaces/setting.py" line="632"/>
-        <source>Textbox Modification (Deprecated)</source>
-        <translation type="finished">Textbox Modification (Deprecated)</translation>
+        <translation>Keyboard Simulation</translation>
     </message>
     <message>
         <location filename="../interfaces/setting.py" line="639"/>
+        <source>Textbox Modification (Deprecated)</source>
+        <translation>Textbox Modification (Deprecated)</translation>
+    </message>
+    <message>
+        <location filename="../interfaces/setting.py" line="647"/>
         <source>Wait Time</source>
-        <translation type="finished">Wait Time</translation>
+        <translation>Wait Time</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="640"/>
+        <location filename="../interfaces/setting.py" line="648"/>
         <source>Time to wait for the search window to fully close</source>
-        <translation type="finished">Time to wait for the search window to fully close</translation>
+        <translation>Time to wait for the search window to fully close</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="649"/>
+        <location filename="../interfaces/setting.py" line="657"/>
         <source>PowerToys Run Shortcut</source>
-        <translation type="finished">PowerToys Run Shortcut</translation>
+        <translation>PowerToys Run Shortcut</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="650"/>
+        <location filename="../interfaces/setting.py" line="658"/>
         <source>Shortcut to invoke PowerToys Run</source>
-        <translation type="finished">Shortcut to invoke PowerToys Run</translation>
+        <translation>Shortcut to invoke PowerToys Run</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="659"/>
+        <location filename="../interfaces/setting.py" line="667"/>
         <source>Auto Focus</source>
-        <translation type="finished">Auto Focus</translation>
+        <translation>Auto Focus</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="660"/>
+        <location filename="../interfaces/setting.py" line="670"/>
         <source>(Deprecated) Whether to automatically set focus to PowerToys Run window</source>
-        <translation type="finished">(Deprecated) Whether to automatically set focus to PowerToys Run window</translation>
+        <translation>(Deprecated) Whether to automatically set focus to PowerToys Run window</translation>
     </message>
 </context>
 <context>
     <name>ShortcutPickerMessageBox</name>
     <message>
-        <location filename="../interfaces/setting.py" line="283"/>
+        <location filename="../interfaces/setting.py" line="284"/>
         <source>Shortcut Settings</source>
-        <translation type="finished">Shortcut Settings</translation>
+        <translation>Shortcut Settings</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="284"/>
+        <location filename="../interfaces/setting.py" line="286"/>
         <source>Shortcut to invoke PowerToys Run</source>
-        <translation type="finished">Shortcut to invoke PowerToys Run</translation>
+        <translation>Shortcut to invoke PowerToys Run</translation>
     </message>
 </context>
 <context>
     <name>Window</name>
     <message>
-        <location filename="../main.py" line="458"/>
-        <location filename="../main.py" line="488"/>
+        <location filename="../main.py" line="461"/>
+        <location filename="../main.py" line="495"/>
         <source>✓ Enable</source>
-        <translation type="finished">✓ Enable</translation>
+        <translation>✓ Enable</translation>
     </message>
     <message>
-        <location filename="../main.py" line="466"/>
+        <location filename="../main.py" line="470"/>
         <source>     Show Main Window</source>
-        <translation type="finished">     Show Main Window</translation>
+        <translation>     Show Main Window</translation>
     </message>
     <message>
-        <location filename="../main.py" line="473"/>
+        <location filename="../main.py" line="479"/>
         <source>     Exit</source>
-        <translation type="finished">     Exit</translation>
+        <translation>     Exit</translation>
     </message>
     <message>
-        <location filename="../main.py" line="491"/>
+        <location filename="../main.py" line="498"/>
         <source>✗ Enable</source>
-        <translation type="finished">✗ Enable</translation>
-    </message>
-    <message>
-        <location filename="../main.py" line="518"/>
-        <source>Support the Author🥰</source>
-        <translation type="finished">Support the Author🥰</translation>
-    </message>
-    <message>
-        <location filename="../main.py" line="521"/>
-        <source>Personal development is not easy. If this project has helped you, please consider buying the author a bottle of happy water🥤. Your support is the motivation for the author to develop and maintain the project🚀</source>
-        <translation type="finished">Personal development is not easy. If this project has helped you, please consider buying the author a bottle of happy water🥤. Your support is the motivation for the author to develop and maintain the project🚀</translation>
-    </message>
-    <message>
-        <location filename="../main.py" line="524"/>
-        <source>Go🥰</source>
-        <translation type="finished">Go🥰</translation>
+        <translation>✗ Enable</translation>
     </message>
     <message>
         <location filename="../main.py" line="525"/>
-        <source>Maybe Next Time😭</source>
-        <translation type="finished">Maybe Next Time😭</translation>
+        <source>Support the Author🥰</source>
+        <translation>Support the Author🥰</translation>
     </message>
     <message>
         <location filename="../main.py" line="528"/>
+        <source>Personal development is not easy. If this project has helped you, please consider buying the author a bottle of happy water🥤. Your support is the motivation for the author to develop and maintain the project🚀</source>
+        <translation>Personal development is not easy. If this project has helped you, please consider buying the author a bottle of happy water🥤. Your support is the motivation for the author to develop and maintain the project🚀</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="531"/>
+        <source>Go🥰</source>
+        <translation>Go🥰</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="532"/>
+        <source>Maybe Next Time😭</source>
+        <translation>Maybe Next Time😭</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="536"/>
         <source>https://afdian.com/a/Illustar0</source>
-        <translation type="finished">https://afdian.com/a/Illustar0</translation>
+        <translation>https://afdian.com/a/Illustar0</translation>
     </message>
     <message>
-        <location filename="../main.py" line="556"/>
+        <location filename="../main.py" line="565"/>
         <source>Update Detected</source>
-        <translation type="finished">Update Detected</translation>
+        <translation>Update Detected</translation>
     </message>
     <message>
-        <location filename="../main.py" line="557"/>
+        <location filename="../main.py" line="568"/>
         <source>Current Version: {current_version}
 Latest Version: {latest_version}</source>
-        <translation type="finished">Current Version: {current_version}
+        <translation>Current Version: {current_version}
 Latest Version: {latest_version}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="560"/>
+        <location filename="../main.py" line="573"/>
         <source>Update</source>
-        <translation type="finished">Update</translation>
+        <translation>Update</translation>
     </message>
     <message>
-        <location filename="../main.py" line="561"/>
-        <location filename="../main.py" line="626"/>
+        <location filename="../main.py" line="574"/>
+        <location filename="../main.py" line="644"/>
         <source>Cancel</source>
-        <translation type="finished">Cancel</translation>
+        <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../main.py" line="570"/>
+        <location filename="../main.py" line="583"/>
         <source>Check Complete</source>
-        <translation type="finished">Check Complete</translation>
-    </message>
-    <message>
-        <location filename="../main.py" line="571"/>
-        <source>You are using the latest version</source>
-        <translation type="finished">You are using the latest version</translation>
-    </message>
-    <message>
-        <location filename="../main.py" line="580"/>
-        <source>Update Check Failed</source>
-        <translation type="finished">Update Check Failed</translation>
-    </message>
-    <message>
-        <location filename="../main.py" line="581"/>
-        <source>Error Message: {error_msg}</source>
-        <translation type="finished">Error Message: {error_msg}</translation>
+        <translation>Check Complete</translation>
     </message>
     <message>
         <location filename="../main.py" line="584"/>
-        <location filename="../main.py" line="609"/>
-        <location filename="../main.py" line="625"/>
-        <source>OK</source>
-        <translation type="finished">OK</translation>
-    </message>
-    <message>
-        <location filename="../main.py" line="592"/>
-        <source>Checking for Updates</source>
-        <translation type="finished">Checking for Updates</translation>
+        <source>You are using the latest version</source>
+        <translation>You are using the latest version</translation>
     </message>
     <message>
         <location filename="../main.py" line="593"/>
-        <source>Checking for updates...</source>
-        <translation type="finished">Checking for updates...</translation>
+        <source>Update Check Failed</source>
+        <translation>Update Check Failed</translation>
     </message>
     <message>
-        <location filename="../main.py" line="605"/>
-        <source>Hook Failed</source>
-        <translation type="finished">Hook Failed</translation>
+        <location filename="../main.py" line="594"/>
+        <source>Error Message: {error_msg}</source>
+        <translation>Error Message: {error_msg}</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="599"/>
+        <location filename="../main.py" line="623"/>
+        <location filename="../main.py" line="643"/>
+        <source>OK</source>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../main.py" line="606"/>
+        <source>Checking for Updates</source>
+        <translation>Checking for Updates</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="607"/>
+        <source>Checking for updates...</source>
+        <translation>Checking for updates...</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="619"/>
+        <source>Hook Failed</source>
+        <translation>Hook Failed</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="620"/>
         <source>Hook failed, the program will exit</source>
-        <translation type="finished">Hook failed, the program will exit</translation>
+        <translation>Hook failed, the program will exit</translation>
     </message>
     <message>
-        <location filename="../main.py" line="622"/>
+        <location filename="../main.py" line="637"/>
         <source>Restart Application</source>
-        <translation type="finished">Restart Application</translation>
+        <translation>Restart Application</translation>
     </message>
     <message>
-        <location filename="../main.py" line="623"/>
+        <location filename="../main.py" line="640"/>
         <source>Switching language requires restarting the application. Do you want to continue?</source>
-        <translation type="finished">Switching language requires restarting the application. Do you want to continue?</translation>
+        <translation>Switching language requires restarting the application. Do you want to continue?</translation>
+    </message>
+</context>
+<context>
+    <name>__main__</name>
+    <message>
+        <location filename="../main.py" line="695"/>
+        <location filename="../main.py" line="703"/>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="695"/>
+        <source>The application is already running!</source>
+        <translation>The application is already running!</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="704"/>
+        <source>Unable to create shared memory!</source>
+        <translation>Unable to create shared memory!</translation>
     </message>
 </context>
 </TS>

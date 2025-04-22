@@ -23,6 +23,8 @@ from PySide6.QtCore import (
     QObject,
     Qt,
     QLocale,
+    QSharedMemory,
+    QCoreApplication,
 )
 from PySide6.QtGui import QIcon, QDesktopServices
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon
@@ -39,6 +41,7 @@ from qfluentwidgets import (
     SplashScreen,
     SystemTrayMenu,
     Action,
+    Dialog,
 )
 from qfluentwidgets import (
     NavigationItemPosition,
@@ -623,7 +626,8 @@ class Window(FluentWindow):
         errorMessageBox.yesButton.setText(self.tr("OK"))  # "确定"
         errorMessageBox.cancelButton.hide()
         errorMessageBox.exec()
-        exit(0)
+        # 设置退出码为1并结束事件循环
+        QApplication.exit(1)
 
     def closeEvent(self, event):
         # 忽略退出事件，而是隐藏到托盘
@@ -662,6 +666,11 @@ class Window(FluentWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setAttribute(Qt.ApplicationAttribute.AA_DontCreateNativeWidgetSiblings)
+
+    # 在创建主窗口之前检查共享内存
+    shared_mem = QSharedMemory("PowerToysRunEnhance")
+
     translator_manager = TranslatorManager.instance()
     translator_load_failed = None
     if CONFIG.get("settings.language") is not None:
@@ -675,16 +684,55 @@ if __name__ == "__main__":
             ):
                 if translator_manager.switch_translator("en_US") is not True:
                     translator_load_failed = True
-    w = Window()
 
     if translator_load_failed:
-        messagebox = MessageBox(
+        messagebox = Dialog(
             "Translation file loading failed",
-            "The system will revert to the default language, Simplified Chinese. Please check if the program is complete.",
-            w,
+            "The system will revert to the default language, English. Please check if the program is complete.",
+            None,
         )
         messagebox.yesButton.setText("OK")
         messagebox.cancelButton.hide()
         messagebox.exec()
+
+    # 尝试附加到现有共享内存（检查是否已运行）
+    if shared_mem.attach():
+        messagebox = Dialog(
+            QApplication.translate("__main__", "Error"),
+            QApplication.translate("__main__", "The application is already running!"),
+            None,
+        )
+        messagebox.yesButton.setText("OK")
+        messagebox.cancelButton.hide()
+        messagebox.exec()
+
+        # 清理共享内存
+        shared_mem.detach()
+        sys.exit(1)
+
+    # 创建共享内存
+    if not shared_mem.create(1):
+        messagebox = Dialog(
+            QApplication.translate("__main__", "Error"),
+            QApplication.translate("__main__", "Unable to create shared memory!"),
+            None,
+        )
+        messagebox.yesButton.setText("OK")
+        messagebox.cancelButton.hide()
+        messagebox.exec()
+
+        if shared_mem.isAttached():
+            shared_mem.detach()
+        sys.exit(1)
+
+    # 创建主窗口
+    w = Window()
     w.show()
-    app.exec()
+
+    exit_code = app.exec()
+
+    # 程序结束时清理共享内存
+    if shared_mem.isAttached():
+        shared_mem.detach()
+
+    sys.exit(exit_code)
