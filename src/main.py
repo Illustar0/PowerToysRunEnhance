@@ -1,5 +1,4 @@
 import ctypes
-import os
 import signal
 import sys
 import time
@@ -12,6 +11,7 @@ import win32con
 import win32gui
 import win32process
 import winput
+from PySide6 import QtCore
 from PySide6.QtCore import (
     QThread,
     Signal,
@@ -24,7 +24,6 @@ from PySide6.QtCore import (
     Qt,
     QLocale,
     QSharedMemory,
-    QCoreApplication,
 )
 from PySide6.QtGui import QIcon, QDesktopServices
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon
@@ -652,16 +651,18 @@ class Window(FluentWindow):
             if hasattr(self, "tray_icon") and self.tray_icon is not None:
                 self.tray_icon.hide()
                 self.tray_icon.setParent(None)
-            # 重启应用
-            os.execl(sys.executable, sys.executable, *sys.argv)
+            process = QtCore.QProcess()
+            process.startDetached(sys.executable, sys.argv)
+            QApplication.quit()
 
     def quit_application(self):
         # 在退出前先隐藏并移除托盘图标
         if hasattr(self, "tray_icon") and self.tray_icon is not None:
             self.tray_icon.hide()
             self.tray_icon.setParent(None)
-            del self.tray_icon
-        sys.exit()
+            self.tray_icon.deleteLater()
+            # del self.tray_icon
+        QApplication.quit()
 
 
 if __name__ == "__main__":
