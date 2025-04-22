@@ -143,128 +143,128 @@
 <context>
     <name>Window</name>
     <message>
-        <location filename="../main.py" line="461"/>
-        <location filename="../main.py" line="495"/>
+        <location filename="../main.py" line="463"/>
+        <location filename="../main.py" line="497"/>
         <source>✓ Enable</source>
         <translation>✓ 有効</translation>
     </message>
     <message>
-        <location filename="../main.py" line="470"/>
+        <location filename="../main.py" line="472"/>
         <source>     Show Main Window</source>
         <translation>     メインウィンドウを表示</translation>
     </message>
     <message>
-        <location filename="../main.py" line="479"/>
+        <location filename="../main.py" line="481"/>
         <source>     Exit</source>
         <translation>     終了</translation>
     </message>
     <message>
-        <location filename="../main.py" line="498"/>
+        <location filename="../main.py" line="500"/>
         <source>✗ Enable</source>
         <translation>✗ 有効</translation>
     </message>
     <message>
-        <location filename="../main.py" line="525"/>
+        <location filename="../main.py" line="527"/>
         <source>Support the Author🥰</source>
         <translation>作者を応援する🥰</translation>
     </message>
     <message>
-        <location filename="../main.py" line="528"/>
+        <location filename="../main.py" line="530"/>
         <source>Personal development is not easy. If this project has helped you, please consider buying the author a bottle of happy water🥤. Your support is the motivation for the author to develop and maintain the project🚀</source>
         <translation>個人開発は簡単ではありません。このプロジェクトがあなたの役に立った場合は、作者に幸せな水🥤を一本購入することを検討してください。あなたのサポートは、作者がプロジェクトを開発・維持する動機になります🚀</translation>
     </message>
     <message>
-        <location filename="../main.py" line="531"/>
+        <location filename="../main.py" line="533"/>
         <source>Go🥰</source>
         <translation>行く🥰</translation>
     </message>
     <message>
-        <location filename="../main.py" line="532"/>
+        <location filename="../main.py" line="534"/>
         <source>Maybe Next Time😭</source>
         <translation>また今度😭</translation>
     </message>
     <message>
-        <location filename="../main.py" line="536"/>
+        <location filename="../main.py" line="538"/>
         <source>https://afdian.com/a/Illustar0</source>
         <translation>https://afdian.com/a/Illustar0</translation>
     </message>
     <message>
-        <location filename="../main.py" line="565"/>
+        <location filename="../main.py" line="567"/>
         <source>Update Detected</source>
         <translation>更新が検出されました</translation>
     </message>
     <message>
-        <location filename="../main.py" line="568"/>
+        <location filename="../main.py" line="570"/>
         <source>Current Version: {current_version}
 Latest Version: {latest_version}</source>
         <translation>現在のバージョン: {current_version}
 最新バージョン: {latest_version}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="573"/>
+        <location filename="../main.py" line="575"/>
         <source>Update</source>
         <translation>更新</translation>
     </message>
     <message>
-        <location filename="../main.py" line="574"/>
-        <location filename="../main.py" line="644"/>
+        <location filename="../main.py" line="576"/>
+        <location filename="../main.py" line="647"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../main.py" line="583"/>
+        <location filename="../main.py" line="585"/>
         <source>Check Complete</source>
         <translation>確認完了</translation>
     </message>
     <message>
-        <location filename="../main.py" line="584"/>
+        <location filename="../main.py" line="586"/>
         <source>You are using the latest version</source>
         <translation>最新バージョンを使用しています</translation>
     </message>
     <message>
-        <location filename="../main.py" line="593"/>
+        <location filename="../main.py" line="595"/>
         <source>Update Check Failed</source>
         <translation>更新確認に失敗しました</translation>
     </message>
     <message>
-        <location filename="../main.py" line="594"/>
+        <location filename="../main.py" line="596"/>
         <source>Error Message: {error_msg}</source>
         <translation>エラーメッセージ: {error_msg}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="599"/>
-        <location filename="../main.py" line="623"/>
-        <location filename="../main.py" line="643"/>
+        <location filename="../main.py" line="601"/>
+        <location filename="../main.py" line="625"/>
+        <location filename="../main.py" line="646"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../main.py" line="606"/>
+        <location filename="../main.py" line="608"/>
         <source>Checking for Updates</source>
         <translation>更新を確認中</translation>
     </message>
     <message>
-        <location filename="../main.py" line="607"/>
+        <location filename="../main.py" line="609"/>
         <source>Checking for updates...</source>
         <translation>更新を確認しています...</translation>
     </message>
     <message>
-        <location filename="../main.py" line="619"/>
+        <location filename="../main.py" line="621"/>
         <source>Hook Failed</source>
         <translation>フック失敗</translation>
     </message>
     <message>
-        <location filename="../main.py" line="620"/>
+        <location filename="../main.py" line="622"/>
         <source>Hook failed, the program will exit</source>
         <translation>フックに失敗しました、プログラムを終了します</translation>
     </message>
     <message>
-        <location filename="../main.py" line="637"/>
+        <location filename="../main.py" line="640"/>
         <source>Restart Application</source>
         <translation>アプリケーションを再起動</translation>
     </message>
     <message>
-        <location filename="../main.py" line="640"/>
+        <location filename="../main.py" line="643"/>
         <source>Switching language requires restarting the application. Do you want to continue?</source>
         <translation>言語の切り替えにはアプリケーションの再起動が必要です。続けますか？</translation>
     </message>
@@ -272,18 +272,18 @@ Latest Version: {latest_version}</source>
 <context>
     <name>__main__</name>
     <message>
-        <location filename="../main.py" line="695"/>
-        <location filename="../main.py" line="703"/>
+        <location filename="../main.py" line="702"/>
+        <location filename="../main.py" line="717"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="../main.py" line="695"/>
+        <location filename="../main.py" line="703"/>
         <source>The application is already running!</source>
         <translation>アプリケーションはすでに実行されています。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="704"/>
+        <location filename="../main.py" line="718"/>
         <source>Unable to create shared memory!</source>
         <translation>共有メモリを作成できません。</translation>
     </message>
