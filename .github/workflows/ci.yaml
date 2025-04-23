@@ -40,7 +40,7 @@ jobs:
 
       - name: Build | Build
         run: |
-          $env:NEW_VERSION="${{ github.sha }}"
+          $env:NEW_VERSION="0.1.0"
           .\scripts\build.ps1
       
       - name: Upload Artifacts
