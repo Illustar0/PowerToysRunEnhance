@@ -34,8 +34,8 @@ jobs:
       - name: Setup | Install Python
         run: uv python install
 
-      - name: Setup | Install Inno Setup
-        run: choco install innosetup
+      - name: Setup | Install Inno Setup & UPX & 7-Zip & Dependency Walker
+        run: choco install innosetup upx 7zip dependencywalker -y
 
       - name: Action | Semantic Version Release
         id: release
