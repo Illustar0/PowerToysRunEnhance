@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
+  ci:
     runs-on: windows-latest
     concurrency: release
 
@@ -35,8 +35,8 @@ jobs:
       - name: Setup | Install Python
         run: uv python install
 
-      - name: Setup | Install Inno Setup
-        run: choco install innosetup
+      - name: Setup | Install Inno Setup & UPX & 7-Zip
+        run: choco install innosetup upx 7zip -y
 
       - name: Build | Build
         run: |
