@@ -550,10 +550,11 @@ class LanguageCard(BaseCard):
 
         self.comboBox = ComboBox(self)
         self.comboBox.addItems(choices)
-        if isinstance(default_value, str):
-            self.comboBox.setCurrentText(default_value)
-        else:
-            self.comboBox.setCurrentIndex(default_value)
+        if default_value is not None:
+            if isinstance(default_value, str):
+                self.comboBox.setCurrentText(default_value)
+            else:
+                self.comboBox.setCurrentIndex(default_value)
         self.comboBox.currentIndexChanged.connect(self.on_checked_changed)
         self.hBoxLayout.addWidget(self.comboBox)
         self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
