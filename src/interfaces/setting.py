@@ -19,7 +19,8 @@ from qfluentwidgets import (
 from tomlkit import toml_file
 from winput import WM_KEYDOWN, WM_SYSKEYDOWN, WM_KEYUP, WM_SYSKEYUP
 
-from .base import BaseCard
+from interfaces.base import BaseCard
+from language import LANGUAGE_MAP, REVERSE_LANGUAGE_MAP
 
 VK_TO_KEY_NAME = {
     # 修饰键
@@ -245,9 +246,11 @@ class BaseConfig(QObject):
 class Config(BaseConfig):
     def on_config_updated(self, params):
         if isinstance(params, tuple):
-            self.set(params[1], params[0])
             if params[1] == "settings.language":
+                self.set(params[1], REVERSE_LANGUAGE_MAP.get(params[0]))
                 setting_event_bus.language_changed.emit(params[0])
+            else:
+                self.set(params[1], params[0])
 
 
 CONFIG = Config("config.toml")
@@ -612,7 +615,7 @@ class SettingInterface(QWidget):
             content=self.tr("Language used by the GUI"),
             icon=FluentIcon.LANGUAGE,
             choices=["English", "简体中文", "日本語"],
-            default_value=CONFIG.get("settings.language"),
+            default_value=LANGUAGE_MAP.get(CONFIG.get("settings.language")),
             extra_signal_params="settings.language",
         )
         self.languageCard.configUpdated.connect(CONFIG.on_config_updated)

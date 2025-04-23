@@ -674,18 +674,21 @@ if __name__ == "__main__":
 
     translator_manager = TranslatorManager.instance()
     translator_load_failed = None
-    if CONFIG.get("settings.language") is not None:
+    if CONFIG.get("settings.language") is None:
+        print(QLocale.system().name())
+        if translator_manager.switch_translator(QLocale.system().name()) is False:
+            if translator_manager.switch_translator("en_US") is False:
+                translator_load_failed = True
+    else:
         if (
             translator_manager.switch_translator(CONFIG.get("settings.language"))
-            is not True
+            is False
         ):
-            if (
-                translator_manager.switch_translator(QLocale.system().name())
-                is not True
-            ):
-                if translator_manager.switch_translator("en_US") is not True:
-                    translator_load_failed = True
-
+            translator_load_failed = True
+    if translator_load_failed is None:
+        CONFIG.set("settings.language", translator_manager.get_current_language())
+    else:
+        CONFIG.set("settings.language", "en_US")
     if translator_load_failed:
         messagebox = Dialog(
             "Translation file loading failed",
@@ -695,7 +698,6 @@ if __name__ == "__main__":
         messagebox.yesButton.setText("OK")
         messagebox.cancelButton.hide()
         messagebox.exec()
-
     # 尝试附加到现有共享内存（检查是否已运行）
     if shared_mem.attach():
         messagebox = Dialog(
@@ -725,11 +727,9 @@ if __name__ == "__main__":
         if shared_mem.isAttached():
             shared_mem.detach()
         sys.exit(1)
-
     # 创建主窗口
     w = Window()
     w.show()
-
     exit_code = app.exec()
 
     # 程序结束时清理共享内存

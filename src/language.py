@@ -33,13 +33,15 @@ class TranslatorManager(QObject):
     def switch_translator(self, language: str):
         if "_" in language:
             language_code = language
+            print(language_code, language, 1)
         else:
             language_code = REVERSE_LANGUAGE_MAP[language]
+            print(language_code, language, 2)
         if language_code == self._current_language:
             return True
         logger.debug(f"尝试切换到 {language_code}")
         self._app.removeTranslator(self._translator)
-
+        print(self._translator.load(f"{language_code}.qm", directory="i18n"))
         if self._translator.load(f"{language_code}.qm", directory="i18n"):
             self._app.installTranslator(self._translator)
             self._current_language = language_code
