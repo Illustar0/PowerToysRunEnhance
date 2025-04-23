@@ -40,8 +40,8 @@ jobs:
 
       - name: Build | Build
         run: |
-          set "NEW_VERSION=${{ github.sha }}"
-          "scripts/build.bat"
+          $env:NEW_VERSION="${{ github.sha }}"
+          .\scripts\build.ps1
       
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
