@@ -1,0 +1,56 @@
+name: Ci
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: windows-latest
+    concurrency: release
+
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      # Note: we need to checkout the repository at the workflow sha in case during the workflow
+      # the branch was updated. To keep PSR working with the configured release branches,
+      # we force a checkout of the desired release branch but at the workflow sha HEAD.
+      - name: Setup | Checkout Repository at workflow sha
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Setup | Force correct release branch on workflow sha
+        run: |
+          git checkout -B ${{ github.ref_name }} ${{ github.sha }}
+
+      - name: Setup | Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Setup | Install Python
+        run: uv python install
+
+      - name: Setup | Install Inno Setup
+        run: choco install innosetup
+
+      - name: Build | Build
+        run: |
+          set "NEW_VERSION=${{ github.sha }}"
+          "scripts/build.bat"
+      
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowerToysRunEnhance-Builds
+          path: src/Output/*
+          if-no-files-found: error
+
+      
+
+      
+
