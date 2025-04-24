@@ -79,10 +79,6 @@ jobs:
     needs: [prepare, build]
     runs-on: windows-latest
     if: needs.prepare.outputs.released == 'true'
-    
-    permissions:
-      contents: write
-      
     steps:
       - name: Restore cached build artifacts
         uses: actions/cache@v4
