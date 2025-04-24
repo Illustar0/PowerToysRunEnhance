@@ -7,10 +7,40 @@ on:
   workflow_dispatch:
 
 jobs:
-  ci:
+  setup:
+    name: Setup Runtime
     strategy:
       matrix:
-        arch: [x86_64, x86]
+        arch: [ x86_64 ]
+    runs-on: windows-latest
+
+    permissions:
+      id-token: write
+      contents: write
+
+    outputs:
+      arch: ${{ matrix.arch }}
+
+    steps:
+      - name: Setup | Checkout Repository at workflow sha
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{github.sha}}
+
+      - name: Setup | Force correct release branch on workflow sha
+        run: |
+          git checkout -B ${{github.ref_name}} ${{github.sha}}
+
+      - name: Setup | Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Setup | Install Inno Setup & UPX & 7-Zip
+        run: choco install innosetup upx 7zip -y
+
+  build:
+    name: Build
+    needs: setup
     runs-on: windows-latest
     concurrency: release
 
@@ -19,9 +49,6 @@ jobs:
       contents: write
 
     steps:
-      # Note: we need to checkout the repository at the workflow sha in case during the workflow
-      # the branch was updated. To keep PSR working with the configured release branches,
-      # we force a checkout of the desired release branch but at the workflow sha HEAD.
       - name: Setup | Checkout Repository at workflow sha
         uses: actions/checkout@v4
         with:
@@ -42,16 +69,43 @@ jobs:
         env:
           NEW_VERSION: "0.1.0"
           GITHUB_ACTIONS: "true"
-          ARCH: ${{matrix.arch}}
-          PYTHON: "cpython-3.12.9-windows-${{matrix.arch}}-none"
+          ARCH: ${{needs.setup.outputs.arch}}
+          PYTHON: "cpython-3.12.9-windows-${{needs.setup.outputs.arch}}-none"
         run: |
           .\scripts\build.ps1
-      
+
+      - name: Prepare artifacts for upload
+        run: |
+          mkdir -p artifacts
+          cp -r src/Output/* artifacts/
+
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: artifacts
+          key: build-artifacts-${{github.sha}}
+
+  upload:
+    name: Upload
+    needs: build
+    runs-on: windows-latest
+
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: Restore cached build artifacts
+        uses: actions/cache@v4
+        with:
+          path: artifacts
+          key: build-artifacts-${{github.sha}}
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: PowerToysRunEnhance-CI-Builds-${{ github.sha }}
-          path: src/Output/*
+          path: artifacts/*
           if-no-files-found: error
 
       

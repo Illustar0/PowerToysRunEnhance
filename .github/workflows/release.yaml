@@ -6,21 +6,20 @@ on:
       - main
 
 jobs:
-  release:
-    strategy:
-      matrix:
-        arch: [ x86_64, x86 ]
+  prepare:
+    name: Prepare
     runs-on: windows-latest
     concurrency: release
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      released: ${{ steps.release.outputs.released }}
+      tag: ${{ steps.release.outputs.tag }}
 
     permissions:
       id-token: write
       contents: write
 
     steps:
-      # Note: we need to checkout the repository at the workflow sha in case during the workflow
-      # the branch was updated. To keep PSR working with the configured release branches,
-      # we force a checkout of the desired release branch but at the workflow sha HEAD.
       - name: Setup | Checkout Repository at workflow sha
         uses: actions/checkout@v4
         with:
@@ -31,15 +30,8 @@ jobs:
         run: |
           git checkout -B ${{ github.ref_name }} ${{ github.sha }}
 
-      - name: Setup | Install uv
-        uses: astral-sh/setup-uv@v5
-
-      - name: Setup | Install Inno Setup & UPX & 7-Zip
-        run: choco install innosetup upx 7zip -y
-
       - name: Action | Semantic Version Release
         id: release
-        # Adjust tag with desired version if applicable.
         uses: python-semantic-release/python-semantic-release@v9.21.0
         with:
           changelog: true
@@ -47,20 +39,60 @@ jobs:
           git_committer_name: ${{vars.GH_USERNAME}}
           git_committer_email: ${{vars.GH_EMAIL}}
 
+  build:
+    name: Build
+    needs: prepare
+    strategy:
+      matrix:
+        arch: [ x86_64 ]
+    runs-on: windows-latest
+
+    steps:
+      - name: Setup | Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup | Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Setup | Install Inno Setup & UPX & 7-Zip
+        run: choco install innosetup upx 7zip -y
+
       - name: Build | Build PowerToysRunEnhance
         id: build
         env:
-          NEW_VERSION: ${{ steps.release.outputs.version }}
+          NEW_VERSION: ${{ needs.prepare.outputs.version }}
           GITHUB_ACTIONS: "true"
           ARCH: ${{ matrix.arch }}
           PYTHON: "cpython-3.12.9-windows-${{matrix.arch}}-none"
         run: .\scripts\build.ps1
 
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: src/Output
+          key: build-artifacts-${{github.sha}}
+
+  publish:
+    name: Publish
+    needs: [prepare, build]
+    runs-on: windows-latest
+    if: needs.prepare.outputs.released == 'true'
+    
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Restore cached build artifacts
+        uses: actions/cache@v4
+        with:
+          path: src/Output
+          key: build-artifacts-${{github.sha}}
 
       - name: Publish | Upload to GitHub Release Assets
         uses: python-semantic-release/publish-action@v9.21.0
-        if: steps.release.outputs.released == 'true'
         with:
           github_token: ${{ secrets.GH_PAT }}
-          tag: ${{ steps.release.outputs.tag }}
+          tag: ${{ needs.prepare.outputs.tag }}
 
