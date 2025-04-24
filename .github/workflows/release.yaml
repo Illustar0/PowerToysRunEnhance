@@ -1,4 +1,4 @@
-name: Continuous Delivery
+name: Release
 
 on:
   push:
@@ -7,6 +7,9 @@ on:
 
 jobs:
   release:
+    strategy:
+      matrix:
+        arch: [ x86_64, x86 ]
     runs-on: windows-latest
     concurrency: release
 
@@ -31,9 +34,6 @@ jobs:
       - name: Setup | Install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Setup | Install Python
-        run: uv python install
-
       - name: Setup | Install Inno Setup & UPX & 7-Zip
         run: choco install innosetup upx 7zip -y
 
@@ -42,14 +42,25 @@ jobs:
         # Adjust tag with desired version if applicable.
         uses: python-semantic-release/python-semantic-release@v9.21.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          git_committer_name: "github-actions"
-          git_committer_email: "actions@users.noreply.github.com"
+          changelog: true
+          github_token: ${{ secrets.GH_PAT }}
+          git_committer_name: ${{vars.GH_USERNAME}}
+          git_committer_email: ${{vars.GH_EMAIL}}
+
+      - name: Build | Build PowerToysRunEnhance
+        id: build
+        env:
+          NEW_VERSION: ${{ steps.release.outputs.version }}
+          GITHUB_ACTIONS: "true"
+          ARCH: ${{ matrix.arch }}
+          PYTHON: "cpython-3.12.9-windows-${{matrix.arch}}-none"
+        run: .\scripts\build.ps1
+
 
       - name: Publish | Upload to GitHub Release Assets
         uses: python-semantic-release/publish-action@v9.21.0
         if: steps.release.outputs.released == 'true'
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PAT }}
           tag: ${{ steps.release.outputs.tag }}
 

@@ -1,20 +1,33 @@
 # 设置编码和参数
 $OutputEncoding = [System.Text.Encoding]::UTF8
-$env:ARCH = "x64"
+
+if ($null -eq $env:NEW_VERSION) {
+    $env:NEW_VERSION = "0.1.0"
+}
+
+if ($null -eq $env:ARCH) {
+    $env:ARCH = "x64"
+}
 
 # 创建并激活虚拟环境
 Write-Host "正在创建和激活虚拟环境..."
-uv venv
+
+if ($null -ne $env:PYTHON ) {
+    uv venv --python $env:PYTHON
+} else {
+    uv venv
+}
+
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "创建虚拟环境失败！"
-    exit $LASTEXITCODE
+Write-Host "创建虚拟环境失败！"
+exit $LASTEXITCODE
 }
 
 # 激活虚拟环境
 & ".venv\Scripts\Activate.ps1"
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "激活虚拟环境失败！"
-    exit $LASTEXITCODE
+Write-Host "激活虚拟环境失败！"
+exit $LASTEXITCODE
 }
 
 # 安装依赖
@@ -22,8 +35,8 @@ Write-Host "正在同步依赖..."
 uv sync --frozen
 uv pip install nuitka
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "依赖同步失败！"
-    exit $LASTEXITCODE
+Write-Host "依赖同步失败！"
+exit $LASTEXITCODE
 }
 
 # 切换到源代码目录
@@ -45,6 +58,8 @@ Get-ChildItem -Path "i18n\*.ts" | ForEach-Object {
 
 # 使用Nuitka编译成可执行文件
 Write-Host "正在编译项目..."
+
+<#
 if ($null -ne $env:GITHUB_ACTIONS -and $env:GITHUB_ACTIONS -eq "true") {
     uv run nuitka --msvc=latest `
     --lto=yes `
@@ -62,6 +77,7 @@ if ($null -ne $env:GITHUB_ACTIONS -and $env:GITHUB_ACTIONS -eq "true") {
     --file-description="A non-intrusive tool that replaces Windows Search with PowerToys Run." `
     --copyright="Copyright (c) 2024 Illustar0 | MIT License" `
     --output-filename=PowerToysRunEnhance.exe `
+    --assume-yes-for-downloads `
     --include-data-files=./i18n/*.qm=i18n/ main.py
 } else {
     uv run nuitka --mingw64 `
@@ -80,8 +96,29 @@ if ($null -ne $env:GITHUB_ACTIONS -and $env:GITHUB_ACTIONS -eq "true") {
     --file-description="A non-intrusive tool that replaces Windows Search with PowerToys Run." `
     --copyright="Copyright (c) 2024 Illustar0 | MIT License" `
     --output-filename=PowerToysRunEnhance.exe `
+    --assume-yes-for-downloads `
     --include-data-files=./i18n/*.qm=i18n/ main.py
 }
+#>
+
+uv run nuitka --mingw64 `
+    --lto=yes `
+    --standalone `
+    --follow-imports `
+    --include-module=comtypes.stream `
+    --enable-plugin=pyside6 `
+    --include-data-files=./config.toml=config.toml `
+    --include-data-dir=./resources=resources `
+    --windows-icon-from-ico=./resources/logo.ico `
+    --windows-console-mode=disable `
+    --product-name=PowerToysRunEnhance `
+    --product-version=$env:NEW_VERSION `
+    --file-version=$env:NEW_VERSION `
+    --file-description="A non-intrusive tool that replaces Windows Search with PowerToys Run." `
+    --copyright="Copyright (c) 2024 Illustar0 | MIT License" `
+    --output-filename=PowerToysRunEnhance.exe `
+    --assume-yes-for-downloads `
+    --include-data-files=./i18n/*.qm=i18n/ main.py
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "编译项目失败！"

@@ -8,6 +8,9 @@ on:
 
 jobs:
   ci:
+    strategy:
+      matrix:
+        arch: [x86_64, x86]
     runs-on: windows-latest
     concurrency: release
 
@@ -23,31 +26,31 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.sha }}
+          ref: ${{github.sha}}
 
       - name: Setup | Force correct release branch on workflow sha
         run: |
-          git checkout -B ${{ github.ref_name }} ${{ github.sha }}
+          git checkout -B ${{github.ref_name}} ${{github.sha}}
 
       - name: Setup | Install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Setup | Install Python
-        run: uv python install
-
       - name: Setup | Install Inno Setup & UPX & 7-Zip
         run: choco install innosetup upx 7zip -y
 
-      - name: Build | Build
+      - name: Build | Build PowerToysRunEnhance
+        env:
+          NEW_VERSION: "0.1.0"
+          GITHUB_ACTIONS: "true"
+          ARCH: ${{matrix.arch}}
+          PYTHON: "cpython-3.12.9-windows-${{matrix.arch}}-none"
         run: |
-          $env:NEW_VERSION="0.1.0"
-          $env:GITHUB_ACTIONS="true"
           .\scripts\build.ps1
       
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: PowerToysRunEnhance-Builds
+          name: PowerToysRunEnhance-CI-Builds-${{ github.sha }}
           path: src/Output/*
           if-no-files-found: error
 
