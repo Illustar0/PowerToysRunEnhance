@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         arch: [ x86_64 ]
-        debug: [ true, false ]
+        debug: [ DEBUG, NON-DEBUG ]
     concurrency:
       group: release-${{ matrix.debug }}
     steps:
@@ -45,14 +45,14 @@ jobs:
 
       - name: Prepare artifacts for upload
         run: |
-          mkdir -p artifacts-${{ matrix.arch }}-${{ matrix.debug == 'true' && 'Debug' || '' }}
-          cp -r src/Output/* artifacts-${{ matrix.arch }}-${{ matrix.debug == 'true' && 'Debug' || '' }}/
+          mkdir -p artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}
+          cp -r src/Output/* artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}/
 
       - name: Cache build artifacts
         uses: actions/cache@v4
         with:
           path: artifacts
-          key: build-artifacts-${{ matrix.arch }}-${{ matrix.debug == 'true' && 'Debug' || '' }}-${{github.sha}}
+          key: build-artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}-${{github.sha}}
 
   upload:
     name: Upload
@@ -61,17 +61,17 @@ jobs:
     strategy:
       matrix:
         arch: [ x86_64 ]
-        debug: [ true, false ]
+        debug: [ DEBUG, NON-DEBUG ]
     steps:
       - name: Restore cached build artifacts
         uses: actions/cache@v4
         with:
-          path: artifacts-${{ matrix.arch }}-${{ matrix.debug == 'true' && 'Debug' || '' }}
-          key: build-artifacts-${{ matrix.arch }}-${{ matrix.debug == 'true' && 'Debug' || '' }}-${{github.sha}}
+          path: artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}
+          key: build-artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}-${{github.sha}}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: PowerToysRunEnhance-CI-${{ matrix.arch }}-${{ matrix.debug == 'true' && 'Debug' || '' }}-${{ github.sha }}
-          path: artifacts-${{ matrix.arch }}-${{ matrix.debug == 'true' && 'Debug' || '' }}/*
+          path: artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}/*
           if-no-files-found: error
