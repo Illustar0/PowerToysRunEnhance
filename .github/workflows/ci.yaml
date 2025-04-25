@@ -53,7 +53,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}
-          key: build-artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}-${{github.sha}}
+          key: build-artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug-' || '' }}${{github.sha}}
 
   upload:
     name: Upload
