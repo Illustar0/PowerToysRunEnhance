@@ -9,6 +9,10 @@ if ($null -eq $env:ARCH) {
     $env:ARCH = "x64"
 }
 
+if ($null -eq $env:UPX) {
+    $env:UPX = "true"
+}
+
 # 创建并激活虚拟环境
 Write-Host "正在创建和激活虚拟环境..."
 
@@ -145,11 +149,12 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # 使用UPX压缩
-Write-Host "正在使用UPX压缩文件..."
-Get-ChildItem -Path ".\main.dist" -Recurse -Include "*.dll", "*.pyd", "*.exe" | ForEach-Object {
-    uv run upx --best --lzma "$($_.FullName)"
+if ($null -ne $env:UPX -and $env:UPX -eq "true") {
+    Write-Host "正在使用UPX压缩文件..."
+    Get-ChildItem -Path ".\main.dist" -Recurse -Include "*.dll", "*.pyd", "*.exe" | ForEach-Object {
+        uv run upx --best --lzma "$( $_.FullName )"
+    }
 }
-
 # 使用7Z创建压缩包
 Write-Host "正在创建便携版压缩包..."
 if (-not (Test-Path -Path ".\Output")) {

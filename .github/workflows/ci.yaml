@@ -39,6 +39,7 @@ jobs:
           GITHUB_ACTIONS: "true"
           ARCH: ${{ matrix.arch }}
           DEBUG: ${{ matrix.debug }}
+          UPX: "false"
           PYTHON: "cpython-3.12.9-windows-${{ matrix.arch }}-none"
         run: |
           .\scripts\build.ps1
