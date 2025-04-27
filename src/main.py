@@ -142,8 +142,8 @@ class InputDetectionNext(QThread):
             )
             if (
                 data.vkCode not in SPECIAL_KEYS_VKCODE
-                and msg in (256, 257)
-                and data.flags in (0, 128)
+                and msg in (256, 257, 260, 261)
+                and (data.flags & 0x10) == 0
             ):
                 """
                 data.flags == 16 表示 LLKHF_INJECTED ，意味着这个输入是模拟键盘事件
@@ -163,7 +163,7 @@ class InputDetectionNext(QThread):
                         self.sleeping()
                         return
 
-                if msg == 256 and data.flags == 0:
+                if msg in (257, 261):
                     self.buffers.append(data.vkCode)
                     if self.powertoys_launcher_starting is False:
                         self.powertoys_launcher_starting = True
