@@ -87,6 +87,8 @@ class OpenPowertoysRun(QThread):
                 keyboard.press(Key.shift)
             elif key.lower() == "space":
                 keyboard.press(Key.space)
+            elif key.lower() == "win":
+                keyboard.press(Key.cmd)
             else:
                 keyboard.press(key.lower())
 
@@ -100,6 +102,8 @@ class OpenPowertoysRun(QThread):
                 keyboard.release(Key.shift)
             elif key.lower() == "space":
                 keyboard.release(Key.space)
+            elif key.lower() == "win":
+                keyboard.release(Key.cmd)
             else:
                 keyboard.release(key.lower())
 
