@@ -153,6 +153,9 @@ class InputDetectionNext(QThread):
                 if self.powertoys_launcher_starting is not True:
                     if (
                         "SearchHost.exe" not in process_name
+                        and "SearchUI.exe" not in process_name
+                        and "SearchApp.exe" not in process_name
+                        and "Microsoft.CmdPal.UI.exe" not in process_name
                         and "PowerToys.PowerLauncher.exe" not in process_name
                         and process_name != ""
                     ):
@@ -323,7 +326,11 @@ class WorkingThread(QThread):
                 f"当前窗口焦点 {win32gui.GetWindowText(hwnd)}:{get_process_name(hwnd)}"
             )
             process_name = get_process_name(hwnd)
-            if process_name.find("SearchHost.exe") != -1:
+            if (
+                process_name.find("SearchHost.exe") != -1
+                or process_name.find("SearchUI.exe") != -1
+                or process_name.find("SearchApp.exe") != -1
+            ):
                 if CONFIG.get("settings.detectionMethods") == 0:
                     global_signals.input_detection_listen.emit(hwnd)
                     self.powertoys_launcher_hwnd = hwnd
