@@ -55,10 +55,9 @@ from interfaces.setting import (
     VK_TO_KEY_NAME,
     setting_event_bus,
 )
+from language import TranslatorManager, LANGUAGE_MAP
 
 __VERSION__ = "0.1.0"
-
-from language import TranslatorManager, LANGUAGE_MAP
 
 
 class GlobalSignals(QObject):
