@@ -8,7 +8,7 @@ on:
 jobs:
   prepare:
     name: Prepare
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     concurrency: release
     outputs:
       version: ${{ steps.release.outputs.version }}
@@ -78,7 +78,7 @@ jobs:
   publish:
     name: Publish
     needs: [prepare, build]
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     if: needs.prepare.outputs.released == 'true'
     steps:
       - name: Restore cached build artifacts
