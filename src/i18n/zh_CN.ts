@@ -42,87 +42,87 @@
 <context>
     <name>SettingInterface</name>
     <message>
-        <location filename="../interfaces/setting.py" line="608"/>
+        <location filename="../interfaces/setting.py" line="611"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="611"/>
+        <location filename="../interfaces/setting.py" line="614"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="612"/>
+        <location filename="../interfaces/setting.py" line="615"/>
         <source>Language used by the GUI</source>
         <translation>GUI 使用的语言</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="621"/>
+        <location filename="../interfaces/setting.py" line="624"/>
         <source>Detection Method</source>
         <translation>检测方法</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="622"/>
+        <location filename="../interfaces/setting.py" line="625"/>
         <source>Method to trigger PowerToys Run</source>
         <translation>触发 PowerToys Run 的方法</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="625"/>
+        <location filename="../interfaces/setting.py" line="628"/>
         <source>Input Detection</source>
         <translation>输入检测</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="626"/>
+        <location filename="../interfaces/setting.py" line="629"/>
         <source>Textbox Detection (Deprecated)</source>
         <translation>文本框检测（已弃用）</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="634"/>
+        <location filename="../interfaces/setting.py" line="637"/>
         <source>Input Method</source>
         <translation>输入方法</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="635"/>
+        <location filename="../interfaces/setting.py" line="638"/>
         <source>Method to input text to PowerToys Run</source>
         <translation>向 PowerToys Run 输入文本的方法</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="638"/>
+        <location filename="../interfaces/setting.py" line="641"/>
         <source>Keyboard Simulation</source>
         <translation>键盘模拟</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="639"/>
+        <location filename="../interfaces/setting.py" line="642"/>
         <source>Textbox Modification (Deprecated)</source>
         <translation>文本框修改（已弃用）</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="647"/>
+        <location filename="../interfaces/setting.py" line="650"/>
         <source>Wait Time</source>
         <translation>等待时间</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="648"/>
+        <location filename="../interfaces/setting.py" line="651"/>
         <source>Time to wait for the search window to fully close</source>
         <translation>等待 Windows Search 窗口完全关闭的时间</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="657"/>
+        <location filename="../interfaces/setting.py" line="660"/>
         <source>PowerToys Run Shortcut</source>
         <translation>PowerToys Run 快捷键</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="658"/>
+        <location filename="../interfaces/setting.py" line="661"/>
         <source>Shortcut to invoke PowerToys Run</source>
         <translation>调用 PowerToys Run 的快捷键</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="667"/>
+        <location filename="../interfaces/setting.py" line="670"/>
         <source>Auto Focus</source>
         <translation>自动设置焦点</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="670"/>
+        <location filename="../interfaces/setting.py" line="673"/>
         <source>(Deprecated) Whether to automatically set focus to PowerToys Run window</source>
         <translation>（已弃用）是否自动将焦点设置到 PowerToys Run 窗口</translation>
     </message>
@@ -130,12 +130,12 @@
 <context>
     <name>ShortcutPickerMessageBox</name>
     <message>
-        <location filename="../interfaces/setting.py" line="284"/>
+        <location filename="../interfaces/setting.py" line="287"/>
         <source>Shortcut Settings</source>
         <translation>快捷键设置</translation>
     </message>
     <message>
-        <location filename="../interfaces/setting.py" line="286"/>
+        <location filename="../interfaces/setting.py" line="289"/>
         <source>Shortcut to invoke PowerToys Run</source>
         <translation>调用 PowerToys Run 的快捷键</translation>
     </message>
@@ -143,128 +143,128 @@
 <context>
     <name>Window</name>
     <message>
-        <location filename="../main.py" line="463"/>
-        <location filename="../main.py" line="497"/>
+        <location filename="../main.py" line="462"/>
+        <location filename="../main.py" line="496"/>
         <source>✓ Enable</source>
         <translation>✓ 启用</translation>
     </message>
     <message>
-        <location filename="../main.py" line="472"/>
+        <location filename="../main.py" line="471"/>
         <source>     Show Main Window</source>
         <translation>     显示主窗口</translation>
     </message>
     <message>
-        <location filename="../main.py" line="481"/>
+        <location filename="../main.py" line="480"/>
         <source>     Exit</source>
         <translation>     退出</translation>
     </message>
     <message>
-        <location filename="../main.py" line="500"/>
+        <location filename="../main.py" line="499"/>
         <source>✗ Enable</source>
         <translation>✗ 启用</translation>
     </message>
     <message>
-        <location filename="../main.py" line="527"/>
+        <location filename="../main.py" line="526"/>
         <source>Support the Author🥰</source>
         <translation>支持作者🥰</translation>
     </message>
     <message>
-        <location filename="../main.py" line="530"/>
+        <location filename="../main.py" line="529"/>
         <source>Personal development is not easy. If this project has helped you, please consider buying the author a bottle of happy water🥤. Your support is the motivation for the author to develop and maintain the project🚀</source>
         <translation>个人开发不易。如果这个项目帮助到了你，请考虑给作者买瓶快乐水🥤。你的支持是作者开发和维护项目的动力🚀</translation>
     </message>
     <message>
-        <location filename="../main.py" line="533"/>
+        <location filename="../main.py" line="532"/>
         <source>Go🥰</source>
         <translation>去支持🥰</translation>
     </message>
     <message>
-        <location filename="../main.py" line="534"/>
+        <location filename="../main.py" line="533"/>
         <source>Maybe Next Time😭</source>
         <translation>下次再说😭</translation>
     </message>
     <message>
-        <location filename="../main.py" line="538"/>
-        <source>https://afdian.com/a/Illustar0</source>
+        <location filename="../main.py" line="537"/>
+        <source>https://ko-fi.com/illustar0</source>
         <translation>https://afdian.com/a/Illustar0</translation>
     </message>
     <message>
-        <location filename="../main.py" line="567"/>
+        <location filename="../main.py" line="566"/>
         <source>Update Detected</source>
         <translation>检测到更新</translation>
     </message>
     <message>
-        <location filename="../main.py" line="570"/>
+        <location filename="../main.py" line="569"/>
         <source>Current Version: {current_version}
 Latest Version: {latest_version}</source>
         <translation>当前版本：{current_version}
 最新版本：{latest_version}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="575"/>
+        <location filename="../main.py" line="574"/>
         <source>Update</source>
         <translation>更新</translation>
     </message>
     <message>
-        <location filename="../main.py" line="576"/>
-        <location filename="../main.py" line="647"/>
+        <location filename="../main.py" line="575"/>
+        <location filename="../main.py" line="646"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../main.py" line="585"/>
+        <location filename="../main.py" line="584"/>
         <source>Check Complete</source>
         <translation>检查完成</translation>
     </message>
     <message>
-        <location filename="../main.py" line="586"/>
+        <location filename="../main.py" line="585"/>
         <source>You are using the latest version</source>
         <translation>你正在使用最新版本</translation>
     </message>
     <message>
-        <location filename="../main.py" line="595"/>
+        <location filename="../main.py" line="594"/>
         <source>Update Check Failed</source>
         <translation>更新检查失败</translation>
     </message>
     <message>
-        <location filename="../main.py" line="596"/>
+        <location filename="../main.py" line="595"/>
         <source>Error Message: {error_msg}</source>
         <translation>错误信息：{error_msg}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="601"/>
-        <location filename="../main.py" line="625"/>
-        <location filename="../main.py" line="646"/>
+        <location filename="../main.py" line="600"/>
+        <location filename="../main.py" line="624"/>
+        <location filename="../main.py" line="645"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../main.py" line="608"/>
+        <location filename="../main.py" line="607"/>
         <source>Checking for Updates</source>
         <translation>正在检查更新</translation>
     </message>
     <message>
-        <location filename="../main.py" line="609"/>
+        <location filename="../main.py" line="608"/>
         <source>Checking for updates...</source>
         <translation>正在检查更新...</translation>
     </message>
     <message>
-        <location filename="../main.py" line="621"/>
+        <location filename="../main.py" line="620"/>
         <source>Hook Failed</source>
         <translation>Hook 注册失败</translation>
     </message>
     <message>
-        <location filename="../main.py" line="622"/>
+        <location filename="../main.py" line="621"/>
         <source>Hook failed, the program will exit</source>
         <translation>Hook 注册失败，程序将退出</translation>
     </message>
     <message>
-        <location filename="../main.py" line="640"/>
+        <location filename="../main.py" line="639"/>
         <source>Restart Application</source>
         <translation>重启应用</translation>
     </message>
     <message>
-        <location filename="../main.py" line="643"/>
+        <location filename="../main.py" line="642"/>
         <source>Switching language requires restarting the application. Do you want to continue?</source>
         <translation>切换语言需要重启应用。是否继续？</translation>
     </message>
@@ -272,18 +272,18 @@ Latest Version: {latest_version}</source>
 <context>
     <name>__main__</name>
     <message>
-        <location filename="../main.py" line="702"/>
-        <location filename="../main.py" line="717"/>
+        <location filename="../main.py" line="703"/>
+        <location filename="../main.py" line="718"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../main.py" line="703"/>
+        <location filename="../main.py" line="704"/>
         <source>The application is already running!</source>
         <translation>应用已经运行！</translation>
     </message>
     <message>
-        <location filename="../main.py" line="718"/>
+        <location filename="../main.py" line="719"/>
         <source>Unable to create shared memory!</source>
         <translation>无法创建共享内存!</translation>
     </message>

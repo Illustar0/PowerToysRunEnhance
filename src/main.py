@@ -534,7 +534,7 @@ class Window(FluentWindow):
 
         if w.exec():
             QDesktopServices.openUrl(
-                QUrl(self.tr("https://afdian.com/a/Illustar0"))
+                QUrl(self.tr("https://ko-fi.com/illustar0"))
             )  # "https://afdian.com/a/Illustar0"
 
     def initNavigation(self):
