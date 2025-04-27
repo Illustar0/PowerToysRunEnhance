@@ -335,7 +335,10 @@ class WorkingThread(QThread):
                     global_signals.input_detection_listen.emit(hwnd)
                     self.powertoys_launcher_hwnd = hwnd
 
-            elif process_name.find("PowerLauncher") != -1:
+            elif (
+                    process_name.find("PowerToys.PowerLauncher.exe") != -1
+                    or process_name.find("Microsoft.CmdPal.UI.exe") != -1
+            ):
                 global_signals.powertoys_launcher_started.emit(hwnd)
 
     def input_detection_done(self, data):
