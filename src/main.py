@@ -341,15 +341,6 @@ class WorkingThread(QThread):
             ):
                 global_signals.powertoys_launcher_started.emit(hwnd)
 
-    def input_detection_done(self, data):
-        keyboard = Controller()
-        for keycode in data:
-            if winput.vk_code_dict.get(keycode) == "VK_SPACE":
-                keycode = Key.space
-            else:
-                keycode = VK_TO_KEY_NAME.get(winput.vk_code_dict.get(keycode)).lower()
-            keyboard.type(keycode)
-
     def cleanup(self, signal=None, frame=None):
         if self.hook:
             # 取消钩子
