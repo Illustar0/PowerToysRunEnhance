@@ -29,7 +29,7 @@ from PySide6.QtGui import QIcon, QDesktopServices
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon
 from loguru import logger
 from pynput import keyboard
-from pynput.keyboard import Controller, Key
+from pynput.keyboard import Controller, Key, KeyCode
 from qfluentwidgets import (
     FluentIcon,
     MessageBox,
@@ -61,7 +61,7 @@ __VERSION__ = "0.1.0"
 
 
 class GlobalSignals(QObject):
-    powertoys_launcher_started = Signal(object)
+    target_process_started = Signal(object, object)
     input_detection_done = Signal(object)
     input_detection_listen = Signal(object)
     SetForegroundWindow = Signal(object)
@@ -111,17 +111,15 @@ class OpenPowertoysRun(QThread):
 class InputDetectionNext(QThread):
     def __init__(self):
         super().__init__()
-        self.powertoys_launcher_window = None
+        self.target_window = None
         self.is_listening = False
         self.hwnd = None
         self.buffers = []
         self.listener = keyboard.Listener(win32_event_filter=self.win32_event_filter)
         self.listener.start()
-        self.powertoys_launcher_starting = False
+        self.target_process_starting = False
         self.query_box = None
-        global_signals.powertoys_launcher_started.connect(
-            self.powertoys_launcher_started
-        )
+        global_signals.target_process_started.connect(self.target_process_started)
         global_signals.input_detection_listen.connect(self.listen)
 
     def get_text_from_buffers(self):
@@ -150,7 +148,7 @@ class InputDetectionNext(QThread):
                 data.flags == 0 则为物理按下键
                 """
                 process_name = get_process_name(win32gui.GetForegroundWindow())
-                if self.powertoys_launcher_starting is not True:
+                if self.target_process_starting is not True:
                     if (
                         "SearchHost.exe" not in process_name
                         and "SearchUI.exe" not in process_name
@@ -165,11 +163,11 @@ class InputDetectionNext(QThread):
 
                 if msg in (257, 261):
                     self.buffers.append(data.vkCode)
-                    if self.powertoys_launcher_starting is False:
-                        self.powertoys_launcher_starting = True
+                    if self.target_process_starting is False:
+                        self.target_process_starting = True
                         user32 = ctypes.windll.user32
                         user32.PostMessageW(self.hwnd, 0x0010, 0, 0)
-                        time.sleep(CONFIG.get("settings.waitTime",0.5))
+                        time.sleep(CONFIG.get("settings.waitTime", 0.5))
                         open_powertoys_run = OpenPowertoysRun()
                         open_powertoys_run.run()
                 logger.debug(
@@ -180,20 +178,36 @@ class InputDetectionNext(QThread):
     def run(self):
         return
 
-    def powertoys_launcher_started(self, hwnd):
+    def target_process_started(self, hwnd, target):
         logger.debug("powertoys_launcher_started 信号已接收")
-        if self.powertoys_launcher_starting:
+        if self.target_process_starting:
+            app = pywinauto.Application(backend="uia").connect(handle=hwnd)
+            try:
+                self.target_window = app.window(handle=hwnd)
+                self.target_window.wait("ready", timeout=3)
+            except TimeoutError:
+                logger.debug("线程进入休眠")
+                self.buffers.clear()
+                self.is_listening = False
+                self.target_process_starting = False
+
             if CONFIG.get("settings.autoFocus", True):
-                app = pywinauto.Application(backend="uia").connect(handle=hwnd)
-                self.powertoys_launcher_window = app.window(handle=hwnd)
-                self.query_box = self.powertoys_launcher_window.child_window(
-                    auto_id="QueryTextBox"
-                )
-                if self.query_box.window_text() != "":
-                    self.query_box.set_text("")
-                global_signals.SetForegroundWindow.emit(hwnd)
-                self.query_box.set_focus()
-            time.sleep(0.2)
+                if target == "PowerToysRun":
+                    self.query_box = self.target_window.child_window(
+                        auto_id="QueryTextBox"
+                    )
+                    if self.query_box.window_text() != "":
+                        self.query_box.set_text("")
+                    global_signals.SetForegroundWindow.emit(hwnd)
+                    self.query_box.set_focus()
+                elif target == "Command Palette":
+                    self.query_box = self.target_window.child_window(
+                        auto_id="FilterBox"
+                    )
+                    if self.query_box.window_text() != "":
+                        self.query_box.set_text("")
+                    global_signals.SetForegroundWindow.emit(hwnd)
+                    self.query_box.set_focus()
             logger.debug(self.buffers)
             if CONFIG.get("settings.inputMethods", 0) == 0:
                 keyboard = Controller()
@@ -225,14 +239,14 @@ class InputDetectionNext(QThread):
         logger.debug("线程进入休眠")
         self.buffers.clear()
         self.is_listening = False
-        self.powertoys_launcher_starting = False
+        self.target_process_starting = False
 
     def listen(self, hwnd):
         logger.debug("重新开始监听")
         self.hwnd = hwnd
         self.buffers.clear()
         self.is_listening = True
-        self.powertoys_launcher_starting = False
+        self.target_process_starting = False
 
 
 class UpdateCheckerThread(QThread):
@@ -334,11 +348,12 @@ class WorkingThread(QThread):
                     global_signals.input_detection_listen.emit(hwnd)
                     self.powertoys_launcher_hwnd = hwnd
 
-            elif (
-                    process_name.find("PowerToys.PowerLauncher.exe") != -1
-                    or process_name.find("Microsoft.CmdPal.UI.exe") != -1
-            ):
-                global_signals.powertoys_launcher_started.emit(hwnd)
+            elif process_name.find("PowerToys.PowerLauncher.exe") != -1:
+                target = "PowerToysRun"
+                global_signals.target_process_started.emit(hwnd, target)
+            elif process_name.find("Microsoft.CmdPal.UI.exe") != -1:
+                target = "Command Palette"
+                global_signals.target_process_started.emit(hwnd, target)
 
     def cleanup(self, signal=None, frame=None):
         if self.hook:
