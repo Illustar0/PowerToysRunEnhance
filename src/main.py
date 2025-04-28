@@ -169,7 +169,7 @@ class InputDetectionNext(QThread):
                         self.powertoys_launcher_starting = True
                         user32 = ctypes.windll.user32
                         user32.PostMessageW(self.hwnd, 0x0010, 0, 0)
-                        time.sleep(0.5)
+                        time.sleep(CONFIG.get("settings.waitTime",0.5))
                         open_powertoys_run = OpenPowertoysRun()
                         open_powertoys_run.run()
                 logger.debug(
