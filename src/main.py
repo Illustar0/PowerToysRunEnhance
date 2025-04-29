@@ -223,13 +223,9 @@ class InputDetectionNext(QThread):
             if CONFIG.get("settings.inputMethods", 0) == 0:
                 keyboard = Controller()
                 for keycode in self.buffers:
-                    if winput.vk_code_dict.get(keycode) == "VK_SPACE":
-                        key_code = Key.space
-                    else:
-                        key_code = KeyCode.from_vk(keycode)
-                    keyboard.press(key_code)
-                    keyboard.release(key_code)
-                    time.sleep(0.03)
+                    key_code = KeyCode.from_vk(keycode)
+                    keyboard.tap(key_code)
+                    time.sleep(0.05)
                     logger.debug(f"尝试输入 {keycode}并设置焦点")
             # 不推荐
             else:
