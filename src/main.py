@@ -72,40 +72,33 @@ global_signals = GlobalSignals()
 
 
 class OpenPowertoysRun(QThread):
+    SPECIAL_KEYS = {
+        "alt": Key.alt,
+        "ctrl": Key.ctrl,
+        "shift": Key.shift,
+        "space": Key.space,
+        "win": Key.cmd,
+    }
+
+    def _map_key(self, key: str) -> str:
+        """将输入键映射到对应的键值"""
+        return self.SPECIAL_KEYS.get(key.lower(), key.lower())
+
     def run(self):
-        shortcut = CONFIG.get("settings.powerToysRunShortCut", "Alt+Space")
+        shortcut: str = CONFIG.get("settings.powerToysRunShortCut", "Alt+Space")
         keyboard = Controller()
-        keys = shortcut.split("+")
+        key_combinations = shortcut.split("-")
 
-        # 按下所有键
-        for key in keys:
-            if key.lower() == "alt":
-                keyboard.press(Key.alt)
-            elif key.lower() == "ctrl":
-                keyboard.press(Key.ctrl)
-            elif key.lower() == "shift":
-                keyboard.press(Key.shift)
-            elif key.lower() == "space":
-                keyboard.press(Key.space)
-            elif key.lower() == "win":
-                keyboard.press(Key.cmd)
+        for combination in key_combinations:
+            if "+" in combination:
+                keys = combination.split("+")
+                mapped_keys = [self._map_key(key) for key in keys]
+                with keyboard.pressed(*mapped_keys):
+                    pass
             else:
-                keyboard.press(key.lower())
-
-        # 释放所有键
-        for key in reversed(keys):
-            if key.lower() == "alt":
-                keyboard.release(Key.alt)
-            elif key.lower() == "ctrl":
-                keyboard.release(Key.ctrl)
-            elif key.lower() == "shift":
-                keyboard.release(Key.shift)
-            elif key.lower() == "space":
-                keyboard.release(Key.space)
-            elif key.lower() == "win":
-                keyboard.release(Key.cmd)
-            else:
-                keyboard.release(key.lower())
+                key = self._map_key(combination)
+                keyboard.tap(key)
+            time.sleep(0.05)
 
 
 class InputDetectionNext(QThread):
