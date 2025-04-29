@@ -30,6 +30,7 @@ from PySide6.QtWidgets import QApplication, QSystemTrayIcon
 from loguru import logger
 from pynput import keyboard
 from pynput.keyboard import Controller, Key, KeyCode
+from pywinauto.findwindows import ElementNotFoundError
 from qfluentwidgets import (
     FluentIcon,
     MessageBox,
@@ -148,6 +149,7 @@ class InputDetectionNext(QThread):
                         and "SearchApp.exe" not in process_name
                         and "Microsoft.CmdPal.UI.exe" not in process_name
                         and "PowerToys.PowerLauncher.exe" not in process_name
+                        and "Listary.exe" not in process_name
                         and process_name != ""
                     ):
                         logger.debug(f"{process_name}非搜索或PowerLauncher，线程休眠")
@@ -185,22 +187,37 @@ class InputDetectionNext(QThread):
                 self.target_process_starting = False
 
             if CONFIG.get("settings.autoFocus", True):
-                if target == "PowerToysRun":
-                    self.query_box = self.target_window.child_window(
-                        auto_id="QueryTextBox"
-                    )
-                    if self.query_box.window_text() != "":
-                        self.query_box.set_text("")
-                    global_signals.SetForegroundWindow.emit(hwnd)
-                    self.query_box.set_focus()
-                elif target == "Command Palette":
-                    self.query_box = self.target_window.child_window(
-                        auto_id="FilterBox"
-                    )
-                    if self.query_box.window_text() != "":
-                        self.query_box.set_text("")
-                    global_signals.SetForegroundWindow.emit(hwnd)
-                    self.query_box.set_focus()
+                try:
+                    if target == "PowerToysRun":
+                        self.query_box = self.target_window.child_window(
+                            auto_id="QueryTextBox"
+                        )
+                        if self.query_box.window_text() != "":
+                            self.query_box.set_text("")
+                        global_signals.SetForegroundWindow.emit(hwnd)
+                        self.query_box.set_focus()
+                    elif target == "Command Palette":
+                        self.query_box = self.target_window.child_window(
+                            auto_id="FilterBox"
+                        )
+                        if self.query_box.window_text() != "":
+                            self.query_box.set_text("")
+                        global_signals.SetForegroundWindow.emit(hwnd)
+                        self.query_box.set_focus()
+                    elif target == "Listary":
+                        self.query_box = self.target_window.child_window(
+                            auto_id="PART_SearchBox"
+                        )
+                        if self.query_box.window_text() != "":
+                            self.query_box.set_text("")
+                        global_signals.SetForegroundWindow.emit(hwnd)
+                        self.query_box.set_focus()
+
+                except ElementNotFoundError:
+                    logger.error(f"未找到 {target}")
+                    self.buffers.clear()
+                    self.is_listening = False
+                    self.target_process_starting = False
             logger.debug(self.buffers)
             if CONFIG.get("settings.inputMethods", 0) == 0:
                 keyboard = Controller()
@@ -346,6 +363,9 @@ class WorkingThread(QThread):
                 global_signals.target_process_started.emit(hwnd, target)
             elif process_name.find("Microsoft.CmdPal.UI.exe") != -1:
                 target = "Command Palette"
+                global_signals.target_process_started.emit(hwnd, target)
+            elif process_name.find("Listary.exe") != -1:
+                target = "Listary"
                 global_signals.target_process_started.emit(hwnd, target)
 
     def cleanup(self, signal=None, frame=None):
