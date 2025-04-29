@@ -669,7 +669,7 @@ class SettingInterface(QWidget):
         autoFocusCard = AutoFocusCard(
             title=self.tr("Auto Focus"),
             content=self.tr(
-                "(Deprecated) Whether to automatically set focus to PowerToys Run window"
+                "Whether to automatically set focus to PowerToys Run window"
             ),
             icon=FluentIcon.TAG,
             default_value=CONFIG.get("settings.autoFocus"),
