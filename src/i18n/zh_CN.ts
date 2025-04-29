@@ -123,8 +123,12 @@
     </message>
     <message>
         <location filename="../interfaces/setting.py" line="673"/>
+        <source>Whether to automatically set focus to PowerToys Run window</source>
+        <translation>是否自动将焦点设置到 PowerToys Run 窗口</translation>
+    </message>
+    <message>
         <source>(Deprecated) Whether to automatically set focus to PowerToys Run window</source>
-        <translation>（已弃用）是否自动将焦点设置到 PowerToys Run 窗口</translation>
+        <translation type="vanished">（已弃用）是否自动将焦点设置到 PowerToys Run 窗口</translation>
     </message>
 </context>
 <context>
@@ -143,128 +147,128 @@
 <context>
     <name>Window</name>
     <message>
-        <location filename="../main.py" line="462"/>
-        <location filename="../main.py" line="496"/>
+        <location filename="../main.py" line="494"/>
+        <location filename="../main.py" line="528"/>
         <source>✓ Enable</source>
         <translation>✓ 启用</translation>
     </message>
     <message>
-        <location filename="../main.py" line="471"/>
+        <location filename="../main.py" line="503"/>
         <source>     Show Main Window</source>
         <translation>     显示主窗口</translation>
     </message>
     <message>
-        <location filename="../main.py" line="480"/>
+        <location filename="../main.py" line="512"/>
         <source>     Exit</source>
         <translation>     退出</translation>
     </message>
     <message>
-        <location filename="../main.py" line="499"/>
+        <location filename="../main.py" line="531"/>
         <source>✗ Enable</source>
         <translation>✗ 启用</translation>
     </message>
     <message>
-        <location filename="../main.py" line="526"/>
+        <location filename="../main.py" line="558"/>
         <source>Support the Author🥰</source>
         <translation>支持作者🥰</translation>
     </message>
     <message>
-        <location filename="../main.py" line="529"/>
+        <location filename="../main.py" line="561"/>
         <source>Personal development is not easy. If this project has helped you, please consider buying the author a bottle of happy water🥤. Your support is the motivation for the author to develop and maintain the project🚀</source>
         <translation>个人开发不易。如果这个项目帮助到了你，请考虑给作者买瓶快乐水🥤。你的支持是作者开发和维护项目的动力🚀</translation>
     </message>
     <message>
-        <location filename="../main.py" line="532"/>
+        <location filename="../main.py" line="564"/>
         <source>Go🥰</source>
         <translation>去支持🥰</translation>
     </message>
     <message>
-        <location filename="../main.py" line="533"/>
+        <location filename="../main.py" line="565"/>
         <source>Maybe Next Time😭</source>
         <translation>下次再说😭</translation>
     </message>
     <message>
-        <location filename="../main.py" line="537"/>
+        <location filename="../main.py" line="569"/>
         <source>https://ko-fi.com/illustar0</source>
         <translation>https://afdian.com/a/Illustar0</translation>
     </message>
     <message>
-        <location filename="../main.py" line="566"/>
+        <location filename="../main.py" line="598"/>
         <source>Update Detected</source>
         <translation>检测到更新</translation>
     </message>
     <message>
-        <location filename="../main.py" line="569"/>
+        <location filename="../main.py" line="601"/>
         <source>Current Version: {current_version}
 Latest Version: {latest_version}</source>
         <translation>当前版本：{current_version}
 最新版本：{latest_version}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="574"/>
+        <location filename="../main.py" line="606"/>
         <source>Update</source>
         <translation>更新</translation>
     </message>
     <message>
-        <location filename="../main.py" line="575"/>
-        <location filename="../main.py" line="646"/>
+        <location filename="../main.py" line="607"/>
+        <location filename="../main.py" line="678"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../main.py" line="584"/>
+        <location filename="../main.py" line="616"/>
         <source>Check Complete</source>
         <translation>检查完成</translation>
     </message>
     <message>
-        <location filename="../main.py" line="585"/>
+        <location filename="../main.py" line="617"/>
         <source>You are using the latest version</source>
         <translation>你正在使用最新版本</translation>
     </message>
     <message>
-        <location filename="../main.py" line="594"/>
+        <location filename="../main.py" line="626"/>
         <source>Update Check Failed</source>
         <translation>更新检查失败</translation>
     </message>
     <message>
-        <location filename="../main.py" line="595"/>
+        <location filename="../main.py" line="627"/>
         <source>Error Message: {error_msg}</source>
         <translation>错误信息：{error_msg}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="600"/>
-        <location filename="../main.py" line="624"/>
-        <location filename="../main.py" line="645"/>
+        <location filename="../main.py" line="632"/>
+        <location filename="../main.py" line="656"/>
+        <location filename="../main.py" line="677"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../main.py" line="607"/>
+        <location filename="../main.py" line="639"/>
         <source>Checking for Updates</source>
         <translation>正在检查更新</translation>
     </message>
     <message>
-        <location filename="../main.py" line="608"/>
+        <location filename="../main.py" line="640"/>
         <source>Checking for updates...</source>
         <translation>正在检查更新...</translation>
     </message>
     <message>
-        <location filename="../main.py" line="620"/>
+        <location filename="../main.py" line="652"/>
         <source>Hook Failed</source>
         <translation>Hook 注册失败</translation>
     </message>
     <message>
-        <location filename="../main.py" line="621"/>
+        <location filename="../main.py" line="653"/>
         <source>Hook failed, the program will exit</source>
         <translation>Hook 注册失败，程序将退出</translation>
     </message>
     <message>
-        <location filename="../main.py" line="639"/>
+        <location filename="../main.py" line="671"/>
         <source>Restart Application</source>
         <translation>重启应用</translation>
     </message>
     <message>
-        <location filename="../main.py" line="642"/>
+        <location filename="../main.py" line="674"/>
         <source>Switching language requires restarting the application. Do you want to continue?</source>
         <translation>切换语言需要重启应用。是否继续？</translation>
     </message>
@@ -272,18 +276,18 @@ Latest Version: {latest_version}</source>
 <context>
     <name>__main__</name>
     <message>
-        <location filename="../main.py" line="703"/>
-        <location filename="../main.py" line="718"/>
+        <location filename="../main.py" line="735"/>
+        <location filename="../main.py" line="750"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../main.py" line="704"/>
+        <location filename="../main.py" line="736"/>
         <source>The application is already running!</source>
         <translation>应用已经运行！</translation>
     </message>
     <message>
-        <location filename="../main.py" line="719"/>
+        <location filename="../main.py" line="751"/>
         <source>Unable to create shared memory!</source>
         <translation>无法创建共享内存!</translation>
     </message>
