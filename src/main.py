@@ -163,8 +163,8 @@ class InputDetectionNext(QThread):
                         user32 = ctypes.windll.user32
                         user32.PostMessageW(self.hwnd, 0x0010, 0, 0)
                         time.sleep(CONFIG.get("settings.waitTime", 0.5))
-                        open_powertoys_run = OpenPowertoysRun()
-                        open_powertoys_run.run()
+                        self.open_powertoys_run = OpenPowertoysRun()
+                        self.open_powertoys_run.run()
                 logger.debug(
                     f"按键{winput.vk_code_dict.get(data.vkCode)}被阻止,flags={data.flags},msg={msg}"
                 )
@@ -176,6 +176,7 @@ class InputDetectionNext(QThread):
     def target_process_started(self, hwnd, target):
         logger.debug("powertoys_launcher_started 信号已接收")
         if self.target_process_starting:
+            self.open_powertoys_run.wait()
             app = pywinauto.Application(backend="uia").connect(handle=hwnd)
             try:
                 self.target_window = app.window(handle=hwnd)
