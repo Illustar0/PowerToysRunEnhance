@@ -10,7 +10,6 @@ import win32api
 import win32con
 import win32gui
 import win32process
-import winput
 from PySide6 import QtCore
 from PySide6.QtCore import (
     QThread,
@@ -55,6 +54,7 @@ from interfaces.setting import (
     SPECIAL_KEYS_VKCODE,
     VK_TO_KEY_NAME,
     setting_event_bus,
+    vkcode_to_vk_name,
 )
 from language import TranslatorManager, LANGUAGE_MAP
 
@@ -119,10 +119,10 @@ class InputDetectionNext(QThread):
     def get_text_from_buffers(self):
         text = ""
         for keycode in self.buffers:
-            if winput.vk_code_dict.get(keycode) == "VK_SPACE":
+            if vkcode_to_vk_name(keycode) == "VK_SPACE":
                 text += " "
             else:
-                key_name = VK_TO_KEY_NAME.get(winput.vk_code_dict.get(keycode))
+                key_name = VK_TO_KEY_NAME.get(vkcode_to_vk_name(keycode))
                 if key_name:
                     text += key_name.lower()
         return text
@@ -130,7 +130,7 @@ class InputDetectionNext(QThread):
     def win32_event_filter(self, msg, data):
         if self.is_listening:
             logger.debug(
-                f"pynput 捕获到按键{winput.vk_code_dict.get(data.vkCode)},flags={data.flags},msg={msg}"
+                f"pynput 捕获到按键{vkcode_to_vk_name(data.vkCode)},flags={data.flags},msg={msg}"
             )
             if (
                 data.vkCode not in SPECIAL_KEYS_VKCODE
@@ -166,7 +166,7 @@ class InputDetectionNext(QThread):
                         self.open_powertoys_run = OpenPowertoysRun()
                         self.open_powertoys_run.run()
                 logger.debug(
-                    f"按键{winput.vk_code_dict.get(data.vkCode)}被阻止,flags={data.flags},msg={msg}"
+                    f"按键{vkcode_to_vk_name(data.vkCode)}被阻止,flags={data.flags},msg={msg}"
                 )
                 self.listener.suppress_event()
 
