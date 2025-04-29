@@ -179,7 +179,6 @@ dependencies = [
     { name = "pywin32" },
     { name = "pywinauto" },
     { name = "tomlkit" },
-    { name = "winput" },
 ]
 
 [package.metadata]
@@ -192,7 +191,6 @@ requires-dist = [
     { name = "pywin32", specifier = ">=310" },
     { name = "pywinauto", specifier = ">=0.6.9" },
     { name = "tomlkit", specifier = ">=0.13.2" },
-    { name = "winput", specifier = ">=1.5.0" },
 ]
 
 [[package]]
@@ -2718,13 +2716,4 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b3/8f/705086c9d734d3b663af0e9bb3d4de6578d08f46b1b101c2442fd9aecaa2/win32_setctime-1.2.0.tar.gz", hash = "sha256:ae1fdf948f5640aae05c511ade119313fb6a30d7eabe25fef9764dca5873c4c0", size = 4867, upload_time = "2024-12-07T15:28:28.314Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/07/c6fe3ad3e685340704d314d765b7912993bcb8dc198f0e7a89382d37974b/win32_setctime-1.2.0-py3-none-any.whl", hash = "sha256:95d644c4e708aba81dc3704a116d8cbc974d70b3bdb8be1d150e36be6e9d1390", size = 4083, upload_time = "2024-12-07T15:28:26.465Z" },
-]
-
-[[package]]
-name = "winput"
-version = "1.5.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/68/10/875b72d01885b77cac966e43e08bfddae612a225dc3b97b9f07439c1db76/winput-1.5.0.tar.gz", hash = "sha256:afdaf07f7df67835438619d0c24cf7430a188545e443f9f8e89e4bbbe89bee6f", size = 14069, upload_time = "2022-07-16T10:23:34.439Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/cb/38/f7015dc81b9caac9b40d4ea2cacade9580998c47a132ea3d5369e9856a85/winput-1.5.0-py2.py3-none-any.whl", hash = "sha256:347dd85c6f0f7880497205fbc050ef4d7af549a1af479719c7511716943fe439", size = 11412, upload_time = "2022-07-16T10:23:32.788Z" },
 ]
