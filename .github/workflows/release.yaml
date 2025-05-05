@@ -92,7 +92,7 @@ jobs:
           key: build-artifacts-${{github.sha}}
 
       - name: Publish | Upload to GitHub Release Assets
-        uses: python-semantic-release/publish-action@v9.21.0
+        uses: python-semantic-release/publish-action@v9.21.1
         with:
           github_token: ${{ secrets.GH_PAT }}
           tag: ${{ needs.prepare.outputs.tag }}
