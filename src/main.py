@@ -1,5 +1,6 @@
 import ctypes
 import signal
+import string
 import sys
 import time
 from ctypes import wintypes
@@ -157,7 +158,12 @@ class InputDetectionNext(QThread):
                         return
 
                 if msg in (257, 261):
-                    self.buffers.append(data.vkCode)
+                    is_uppercase = False
+                    caps_lock_state = ctypes.windll.user32.GetKeyState(0x14) & 0x0001
+                    shift_state = ctypes.windll.user32.GetKeyState(0x10) & 0x8000
+                    if caps_lock_state != 0 or shift_state != 0:
+                        is_uppercase = True
+                    self.buffers.append((data.vkCode, is_uppercase))
                     if self.target_process_starting is False:
                         self.target_process_starting = True
                         user32 = ctypes.windll.user32
@@ -222,9 +228,23 @@ class InputDetectionNext(QThread):
             logger.debug(self.buffers)
             if CONFIG.get("settings.inputMethods", 0) == 0:
                 keyboard = Controller()
-                for keycode in self.buffers:
+                for keycode, is_uppercase in self.buffers:
                     key_code = KeyCode.from_vk(keycode)
-                    keyboard.tap(key_code)
+                    print(key_code)
+                    key_name = VK_TO_KEY_NAME.get(vkcode_to_vk_name(keycode))
+                    if key_name in string.ascii_letters and len(key_name) == 1:
+                        if is_uppercase:
+                            try:
+                                keyboard.tap(key_name.upper())
+                            except AttributeError:
+                                keyboard.tap(key_code)
+                        else:
+                            try:
+                                keyboard.tap(key_name.lower())
+                            except AttributeError:
+                                keyboard.tap(key_code)
+                    else:
+                        keyboard.tap(key_code)
                     time.sleep(0.05)
                     logger.debug(f"尝试输入 {keycode}并设置焦点")
             # 不推荐
