@@ -110,6 +110,7 @@ class OpenPowertoysRun(QThread):
 
 
 class InputDetectionNext(QThread):
+    enable = True
     def __init__(self):
         super().__init__()
         self.target_window = None
@@ -135,6 +136,8 @@ class InputDetectionNext(QThread):
         return text
 
     def win32_event_filter(self, msg, data):
+        if not self.enable:
+            return
         if self.is_listening:
             logger.debug(
                 f"pynput 捕获到按键{vkcode_to_vk_name(data.vkCode)},flags={data.flags},msg={msg}"
@@ -186,6 +189,8 @@ class InputDetectionNext(QThread):
         return
 
     def target_process_started(self, hwnd, target):
+        if not self.enable:
+            return
         logger.debug("powertoys_launcher_started 信号已接收")
         if self.target_process_starting:
             self.open_powertoys_run.wait()
@@ -286,6 +291,8 @@ class InputDetectionNext(QThread):
         self.target_process_starting = False
 
     def listen(self, hwnd):
+        if not self.enable:
+            return
         logger.debug("重新开始监听")
         self.hwnd = hwnd
         self.buffers.clear()
@@ -353,6 +360,7 @@ class WorkingThread(QThread):
     @Slot(bool)
     def working(self, checked):
         self.enable = checked
+        self.inputDetection.enable = checked
         """
         # 当设置为禁用时，如果线程正在运行，可以考虑重启线程
         if not checked and self.isRunning():
