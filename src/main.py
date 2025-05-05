@@ -88,7 +88,11 @@ class OpenPowertoysRun(QThread):
 
     def run(self):
         shortcut: str = CONFIG.get("settings.powerToysRunShortCut", "Alt+Space")
+        shift_state=False
         keyboard = Controller()
+        if ctypes.windll.user32.GetKeyState(0x10) & 0x8000 != 0:
+            keyboard.release(Key.shift)
+            shift_state=True
         key_combinations = shortcut.split("-")
 
         for combination in key_combinations:
@@ -101,6 +105,8 @@ class OpenPowertoysRun(QThread):
                 key = self._map_key(combination)
                 keyboard.tap(key)
             time.sleep(0.05)
+        if shift_state:
+            keyboard.press(Key.shift)
 
 
 class InputDetectionNext(QThread):
@@ -228,9 +234,16 @@ class InputDetectionNext(QThread):
             logger.debug(self.buffers)
             if CONFIG.get("settings.inputMethods", 0) == 0:
                 keyboard = Controller()
+                capslock_state = False
+                shift_state = False
+                if ctypes.windll.user32.GetKeyState(0x14) & 0x0001 != 0:
+                    keyboard.tap(Key.caps_lock)
+                    capslock_state = True
+                if ctypes.windll.user32.GetKeyState(0x10) & 0x8000 != 0:
+                    keyboard.release(Key.shift)
+                    shift_state = True
                 for keycode, is_uppercase in self.buffers:
                     key_code = KeyCode.from_vk(keycode)
-                    print(key_code)
                     key_name = VK_TO_KEY_NAME.get(vkcode_to_vk_name(keycode))
                     if key_name in string.ascii_letters and len(key_name) == 1:
                         if is_uppercase:
@@ -247,6 +260,10 @@ class InputDetectionNext(QThread):
                         keyboard.tap(key_code)
                     time.sleep(0.05)
                     logger.debug(f"尝试输入 {keycode}并设置焦点")
+                if capslock_state:
+                    keyboard.tap(Key.caps_lock)
+                if shift_state:
+                    keyboard.press(Key.shift)
             # 不推荐
             else:
                 text = self.get_text_from_buffers()
