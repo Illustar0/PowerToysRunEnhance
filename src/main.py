@@ -88,11 +88,11 @@ class OpenPowertoysRun(QThread):
 
     def run(self):
         shortcut: str = CONFIG.get("settings.powerToysRunShortCut", "Alt+Space")
-        shift_state=False
+        shift_state = False
         keyboard = Controller()
         if ctypes.windll.user32.GetKeyState(0x10) & 0x8000 != 0:
             keyboard.release(Key.shift)
-            shift_state=True
+            shift_state = True
         key_combinations = shortcut.split("-")
 
         for combination in key_combinations:

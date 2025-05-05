@@ -599,7 +599,6 @@ class ShortcutCard(BaseCard):
                 self.configUpdated.emit(self.new_shortcut_params)
                 self.update_buttons(self.new_shortcut_params[0])
 
-
     def __init__(
         self,
         title: str,
