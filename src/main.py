@@ -7,10 +7,8 @@ from ctypes import wintypes
 
 import httpx
 import pywinauto
-import win32api
 import win32con
 import win32gui
-import win32process
 from PySide6 import QtCore
 from PySide6.QtCore import (
     QThread,
@@ -58,6 +56,7 @@ from interfaces.setting import (
     vkcode_to_vk_name,
 )
 from language import TranslatorManager, LANGUAGE_MAP
+from utils import get_process_name
 
 __VERSION__ = "0.1.0"
 
@@ -111,6 +110,7 @@ class OpenPowertoysRun(QThread):
 
 class InputDetectionNext(QThread):
     enable = True
+
     def __init__(self):
         super().__init__()
         self.target_window = None
@@ -324,25 +324,6 @@ class UpdateCheckerThread(QThread):
                 self.update_not_found.emit()
         except Exception as e:
             self.check_error.emit(str(e))
-
-
-def get_process_name(hwnd) -> str:
-    """获取窗口所属的进程名"""
-    try:
-        # 获取进程ID
-        _, pid = win32process.GetWindowThreadProcessId(hwnd)
-        # 打开进程
-        handle = win32api.OpenProcess(
-            win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ,
-            False,
-            pid,
-        )
-        # 获取进程名
-        process_name = win32process.GetModuleFileNameEx(handle, 0)
-        win32api.CloseHandle(handle)
-        return process_name
-    except:
-        return ""
 
 
 class WorkingThread(QThread):
