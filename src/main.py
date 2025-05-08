@@ -177,7 +177,22 @@ class InputDetectionNext(QThread):
                         self.target_process_starting = True
                         user32 = ctypes.windll.user32
                         user32.PostMessageW(self.hwnd, 0x0010, 0, 0)
-                        time.sleep(CONFIG.get("settings.waitTime", 0.5))
+                        start_time = time.time()
+                        while True:
+                            process_name = get_process_name(
+                                user32.GetForegroundWindow()
+                            )
+                            if (
+                                "SearchHost.exe" not in process_name
+                                and "SearchUI.exe" not in process_name
+                                and "SearchApp.exe" not in process_name
+                            ):
+                                break
+                            if time.time() - start_time > 1.5:
+                                self.sleeping()
+                                return
+                            time.sleep(0.01)
+                        # time.sleep(CONFIG.get("settings.waitTime", 0.5))
                         self.open_powertoys_run = OpenPowertoysRun()
                         self.open_powertoys_run.run()
                 logger.debug(
