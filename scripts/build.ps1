@@ -9,9 +9,6 @@ if ($null -eq $env:ARCH) {
     $env:ARCH = "x64"
 }
 
-if ($null -eq $env:UPX) {
-    $env:UPX = "true"
-}
 
 # 创建并激活虚拟环境
 Write-Host "正在创建和激活虚拟环境..."
@@ -135,6 +132,7 @@ if ($null -ne $env:DEBUG -and $env:DEBUG -eq "DEBUG") {
     --include-module=comtypes.stream `
     --include-module=scipy._cyutility `
     --enable-plugin=pyside6 `
+    --enable-plugin=upx `
     --include-data-files=./src/providers/*.py=providers/ `
     --include-data-dir=./src/resources=resources `
     --include-package=src.providers `
@@ -155,16 +153,6 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "编译项目失败！"
     exit $LASTEXITCODE
 }
-
-<#
-# 使用UPX压缩
-if ($null -ne $env:UPX -and $env:UPX -eq "true") {
-    Write-Host "正在使用UPX压缩文件..."
-    Get-ChildItem -Path ".\main.dist" -Recurse -Include "*.dll", "*.pyd", "*.exe" | ForEach-Object {
-        uv run upx --best --lzma "$( $_.FullName )"
-    }
-}
-#>
 
 # 使用7Z创建压缩包
 Write-Host "正在创建便携版压缩包..."
