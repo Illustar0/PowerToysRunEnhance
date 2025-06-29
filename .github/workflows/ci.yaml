@@ -48,7 +48,7 @@ jobs:
       - name: Prepare artifacts for upload
         run: |
           mkdir -p artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}
-          cp -r src/Output/* artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}/
+          cp -r Output/* artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}/
 
       - name: Cache build artifacts
         uses: actions/cache@v4
@@ -74,6 +74,6 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: PowerToysRunEnhance-CI-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug-' || '' }}${{ github.sha }}
+          name: WindowsSearchUtility-CI-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug-' || '' }}${{ github.sha }}
           path: artifacts-${{ matrix.arch }}-${{ matrix.debug == 'DEBUG' && 'Debug' || '' }}/*
           if-no-files-found: error
