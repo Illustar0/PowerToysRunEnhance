@@ -43,9 +43,10 @@ exit $LASTEXITCODE
 }
 
 # 切换到源代码目录
-Set-Location -Path src
+#Set-Location -Path src
 
 # 编译翻译文件
+<#
 Write-Host "正在编译翻译文件..."
 Get-ChildItem -Path "i18n\*.ts" | ForEach-Object {
     $ts_file = $_.FullName
@@ -58,6 +59,7 @@ Get-ChildItem -Path "i18n\*.ts" | ForEach-Object {
         exit $LASTEXITCODE
     }
 }
+#>
 
 # 使用Nuitka编译成可执行文件
 Write-Host "正在编译项目..."
@@ -103,41 +105,50 @@ if ($null -ne $env:GITHUB_ACTIONS -and $env:GITHUB_ACTIONS -eq "true") {
     --include-data-files=./i18n/*.qm=i18n/ main.py
 }
 #>
+
 if ($null -ne $env:DEBUG -and $env:DEBUG -eq "DEBUG") {
     uv run nuitka --mingw64 `
     --lto=yes `
     --standalone `
     --follow-imports `
     --include-module=comtypes.stream `
+    --include-module=scipy._cyutility `
     --enable-plugin=pyside6 `
-    --include-data-dir=./resources=resources `
-    --windows-icon-from-ico=./resources/logo.ico `
-    --product-name=PowerToysRunEnhance `
-    --product-version=$env:NEW_VERSION `
-    --file-version=$env:NEW_VERSION `
-    --file-description="A non-intrusive tool that replaces Windows Search with PowerToys Run." `
-    --copyright="Copyright (c) 2024 Illustar0 | MIT License" `
-    --output-filename=PowerToysRunEnhance.exe `
+    --enable-plugin=upx `
+    --include-data-files=./src/providers/*.py=providers/ `
+    --include-data-dir=./src/resources=resources `
+    --include-package=src.providers `
+    --windows-icon-from-ico=./src/resources/logo.ico `
+    --product-name=WindowsSearchUtility `
+    --product-version=0.1.0 `
+    --file-version=0.1.0 `
+    --file-description="A small tool that non-invasively replaces Windows Search with other tools." `
+    --copyright="Copyright (c) 2024-2025 Illustar0 | GPLv3 License" `
+    --output-filename=WindowsSearchUtility.exe `
     --assume-yes-for-downloads `
-    --include-data-files=./i18n/*.qm=i18n/ main.py
+    src/main.py
 } else {
     uv run nuitka --mingw64 `
     --lto=yes `
     --standalone `
     --follow-imports `
     --include-module=comtypes.stream `
+    --include-module=scipy._cyutility `
     --enable-plugin=pyside6 `
-    --include-data-dir=./resources=resources `
-    --windows-icon-from-ico=./resources/logo.ico `
+    --include-data-files=./src/providers/*.py=providers/ `
+    --include-data-dir=./src/resources=resources `
+    --include-package=src.providers `
     --windows-console-mode=disable `
-    --product-name=PowerToysRunEnhance `
-    --product-version=$env:NEW_VERSION `
-    --file-version=$env:NEW_VERSION `
-    --file-description="A non-intrusive tool that replaces Windows Search with PowerToys Run." `
-    --copyright="Copyright (c) 2024 Illustar0 | MIT License" `
-    --output-filename=PowerToysRunEnhance.exe `
+    --windows-icon-from-ico=./src/resources/logo.ico `
+    --product-name=WindowsSearchUtility `
+    --product-version=0.1.0 `
+    --file-version=0.1.0 `
+    --file-description="A small tool that non-invasively replaces Windows Search with other tools." `
+    --copyright="Copyright (c) 2024-2025 Illustar0 | GPLv3 License" `
+    --output-filename=WindowsSearchUtility.exe `
     --assume-yes-for-downloads `
-    --include-data-files=./i18n/*.qm=i18n/ main.py
+    --deployment `
+    src/main.py
 
 }
 if ($LASTEXITCODE -ne 0) {
@@ -145,6 +156,7 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
+<#
 # 使用UPX压缩
 if ($null -ne $env:UPX -and $env:UPX -eq "true") {
     Write-Host "正在使用UPX压缩文件..."
@@ -152,15 +164,17 @@ if ($null -ne $env:UPX -and $env:UPX -eq "true") {
         uv run upx --best --lzma "$( $_.FullName )"
     }
 }
+#>
+
 # 使用7Z创建压缩包
 Write-Host "正在创建便携版压缩包..."
 if (-not (Test-Path -Path ".\Output")) {
     New-Item -ItemType Directory -Path ".\Output" | Out-Null
 }
 if ($null -ne $env:DEBUG -and $env:DEBUG -eq "DEBUG") {
-    uv run 7z a -tzip -mx9 ".\Output\PowerRunEnhance-$env:NEW_VERSION-$env:ARCH-Portable-Debug.zip" ".\main.dist\*"
+    uv run 7z a -tzip -mx9 ".\Output\WindowsSearchUtility-$env:NEW_VERSION-$env:ARCH-Portable-Debug.zip" ".\main.dist\*"
 } else {
-    uv run 7z a -tzip -mx9 ".\Output\PowerRunEnhance-$env:NEW_VERSION-$env:ARCH-Portable.zip" ".\main.dist\*"
+    uv run 7z a -tzip -mx9 ".\Output\WindowsSearchUtility-$env:NEW_VERSION-$env:ARCH-Portable.zip" ".\main.dist\*"
 }
 if ($LASTEXITCODE -ne 0) {
     Write-Host "创建便携版压缩包失败！"
@@ -170,9 +184,9 @@ if ($LASTEXITCODE -ne 0) {
 # 创建安装程序
 Write-Host "正在创建安装程序..."
 if ($null -ne $env:DEBUG -and $env:DEBUG -eq "DEBUG") {
-    uv run iscc /F"PowerRunEnhance-$env:NEW_VERSION-$env:ARCH-Setup-Debug" /D"MyAppVersion=$env:NEW_VERSION" setup.iss
+    uv run iscc /F"WindowsSearchUtility-$env:NEW_VERSION-$env:ARCH-Setup-Debug" /D"MyAppVersion=$env:NEW_VERSION" scripts/setup.iss
 } else {
-    uv run iscc /F"PowerRunEnhance-$env:NEW_VERSION-$env:ARCH-Setup" /D"MyAppVersion=$env:NEW_VERSION" setup.iss
+    uv run iscc /F"WindowsSearchUtility-$env:NEW_VERSION-$env:ARCH-Setup" /D"MyAppVersion=$env:NEW_VERSION" scripts/setup.iss
 }
 
 if ($LASTEXITCODE -ne 0) {

@@ -3,7 +3,7 @@ import win32con
 import win32process
 
 
-def get_process_name(hwnd) -> str:
+def get_process_path(hwnd) -> str:
     """获取窗口所属的进程名"""
     try:
         # 获取进程ID

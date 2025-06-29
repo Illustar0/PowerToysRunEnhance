@@ -1,15 +1,17 @@
 [project]
-name = "powertoysrunenhance"
+name = "windowssearchutility"
 version = "0.1.0"
-description = "A small tool that non-invasively replaces Windows Search with PowerToys Run."
+description = "A small tool that non-invasively replaces Windows Search with other tools."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "dependency-injector>=4.47.1",
     "httpx>=0.28.1",
     "loguru>=0.7.3",
+    "pydantic>=2.11.5",
     "pynput>=1.8.1",
     "pyside6>=6.9.0",
-    "pyside6-fluent-widgets[full]>=1.7.7",
+    "pyside6-fluent-widgets[full]>=1.8.3",
     "pywin32>=310",
     "pywinauto>=0.6.9",
     "tomlkit>=0.13.2",
@@ -17,7 +19,7 @@ dependencies = [
 
 [tool.semantic_release]
 version_variables = [
-    "src/main.py:__version__",
+    "src/core/model.py:__VERSION__",
     "src/setup.iss:AppVersion",
     ".github/workflows/ci.yaml:NEW_VERSION",
     "scripts/build.ps1:NEW_VERSION"
