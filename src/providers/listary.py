@@ -41,11 +41,14 @@ class Listary(IProvider):
         super().__init__(context)
         self.context = context
         logger.debug(self.context.provider_config)
-        self.config = ListaryConfig.model_validate(self.context.provider_config)
-        # 缓存 hwnd
 
+        # 缓存 hwnd
         self.current_hwnd: int | None = None
         self.provider_app: Application | None = None
+
+    @property
+    def config(self) -> ListaryConfig:
+        return ListaryConfig.model_validate(self.context.provider_config)
 
     def _map_key(self, key: str) -> str:
         """将输入键映射到对应的键值"""
@@ -102,6 +105,7 @@ class Listary(IProvider):
             query_box.wait("ready", timeout=3)
 
             # 等待狗屎 Listary 初始化完成
+            print(self.config.setting_delay)
             time.sleep(self.config.setting_delay)
         except Exception as e:
             logger.error(f"Waiting for Provider to be ready failed: {e}")

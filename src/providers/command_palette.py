@@ -39,11 +39,14 @@ class CommandPalette(IProvider):
     def __init__(self, context: IProviderContext, /):
         super().__init__(context)
         self.context = context
-        self.config = CommandPaletteConfig.model_validate(self.context.provider_config)
-        # 缓存 hwnd
 
+        # 缓存 hwnd
         self.current_hwnd: int | None = None
         self.provider_app: Application | None = None
+
+    @property
+    def config(self) -> CommandPaletteConfig:
+        return CommandPaletteConfig.model_validate(self.context.provider_config)
 
     def _map_key(self, key: str) -> str:
         """将输入键映射到对应的键值"""
