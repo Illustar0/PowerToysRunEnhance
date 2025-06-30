@@ -1,4 +1,4 @@
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Qt
 from PySide6.QtWidgets import QApplication
 from loguru import logger
 
@@ -9,11 +9,13 @@ from src.core.interfaces import (
     IKeyboardHook,
     IProviderManager,
     ITrayIconPresenter,
+    IAggressiveDialog,
 )
 
 
 def wire(
     app: QApplication,
+    dialog: IAggressiveDialog,
     app_config: IConfigurationService,
     tray_icon: ITrayIcon,
     window_hook: IWindowHook,
@@ -37,6 +39,11 @@ def wire(
     window_hook.providerStarted.connect(keyboard_hook.on_provider_started)
     window_hook.windowsSearchStarted.connect(keyboard_hook.start_listening)
 
+    # 阻塞 抢夺焦点
+    keyboard_hook.getFocus.connect(
+        dialog.get_focus, type=Qt.ConnectionType.BlockingQueuedConnection
+    )
+
     # provider_manager connections
     provider_manager.inputDone.connect(keyboard_hook.stop_listening)
 
@@ -59,7 +66,5 @@ def wire(
     app.aboutToQuit.connect(window_hook_thread.wait)
     app.aboutToQuit.connect(keyboard_hook_thread.wait)
     app.aboutToQuit.connect(provider_manager_thread.wait)
-
-
 
     logger.debug("Successfully to wire components.")

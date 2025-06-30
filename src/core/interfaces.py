@@ -153,8 +153,16 @@ class IProviderManager(QObject, ABC, metaclass=QObjectABCMeta):
         pass
 
 
+class IAggressiveDialog(QWidget, ABC, metaclass=QWidgetABCMeta):
+    @abstractmethod
+    def get_focus(self):
+        pass
+
+
 class IKeyboardHook(QObject, ABC, metaclass=QObjectABCMeta):
     """KeyboardHook 接口"""
+
+    getFocus = Signal()
 
     @abstractmethod
     def start_listening(self) -> None:

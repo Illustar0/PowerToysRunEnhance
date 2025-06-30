@@ -87,10 +87,9 @@ class WindowHookWorker(IWindowHook):
 
             elif process_name in WINDOWS_SEARCH_PROCESS_NAME:
                 self.windowsSearchStarted.emit(hwnd)
-                pass
+
             elif process_name in self.provider_process_name:
                 self.providerStarted.emit(hwnd)
-                pass
 
             self.previous_foreground_window_name = process_name
 
@@ -154,7 +153,7 @@ class WindowHookWorker(IWindowHook):
 
 
 class KeyboardHookWorker(IKeyboardHook):
-    launchProvider = Signal(str, IProviderContext)
+    getFocus = Signal()
 
     def __init__(
         self,
@@ -262,6 +261,7 @@ class KeyboardHookWorker(IKeyboardHook):
             logger.info(self.provider_context.user_input)
 
             if self.provider_status is ProviderStatus.COMPLETED:
+                logger.info("Close StartMenu")
                 self.provider_status = ProviderStatus.PENDING
                 self.windows_search_status = WindowsSearchStatus.VISIBLE
 
@@ -282,9 +282,11 @@ class KeyboardHookWorker(IKeyboardHook):
     @Slot()
     def on_windows_search_close(self):
         if self.provider_status != ProviderStatus.PENDING:
+            self.stop_listening()
             return
-        self.windows_search_status = WindowsSearchStatus.INVISIBLE
 
+        self.getFocus.emit()
+        self.windows_search_status = WindowsSearchStatus.INVISIBLE
         # 防止 Provider 启动失败导致死锁
         QTimer.singleShot(1000, self.on_provider_start_failed)
         self.provider_manager.provider_launch(

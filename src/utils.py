@@ -1,6 +1,11 @@
+import ctypes
+
 import win32api
 import win32con
 import win32process
+from PySide6.QtCore import Qt
+
+from src.core.interfaces import IAggressiveDialog
 
 
 def get_process_path(hwnd) -> str:
@@ -20,3 +25,41 @@ def get_process_path(hwnd) -> str:
         return process_name
     except:
         return ""
+
+# So Microsoft, fuck you!
+class AggressiveDialog(IAggressiveDialog):
+    """用于抢占焦点的 QWidget"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowOpacity(0)
+        self.setWindowFlags(
+            self.windowFlags()
+            | Qt.WindowType.WindowStaysOnTopHint
+            | Qt.WindowType.WindowTransparentForInput
+            | Qt.WindowType.Tool
+        )
+
+    def get_focus(self):
+        self.show()
+        force_set_foreground_window(self.winId())
+
+
+def force_set_foreground_window(hwnd: int):
+    """使用 AttachThreadInput 来强制将窗口设为前台"""
+    user32 = ctypes.windll.user32
+
+    foreground_thread_id = user32.GetWindowThreadProcessId(
+        user32.GetForegroundWindow(), None
+    )
+    current_thread_id = ctypes.windll.kernel32.GetCurrentThreadId()
+
+    user32.AttachThreadInput(foreground_thread_id, current_thread_id, True)
+
+    try:
+        user32.BringWindowToTop(hwnd)
+        user32.ShowWindow(hwnd, 5)
+        user32.SetForegroundWindow(hwnd)
+        user32.SetFocus(hwnd)
+    finally:
+        user32.AttachThreadInput(foreground_thread_id, current_thread_id, False)

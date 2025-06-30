@@ -11,6 +11,7 @@ from src.core.presenter import TrayIconPresenter
 from src.core.provider_manager import ProviderManager, ProviderRegistry, ProviderFactory
 from src.core.wiring import wire
 from src.ui.tray_icon import TrayIcon
+from src.utils import AggressiveDialog
 
 
 class MainContainer(containers.DeclarativeContainer):
@@ -62,10 +63,14 @@ class MainContainer(containers.DeclarativeContainer):
     # Main
     qt_application = providers.Singleton(QApplication, sys.argv)
 
+    # 用来抢夺焦点
+    dialog = providers.Singleton(AggressiveDialog)
+
     # Wire
     wiring = providers.Callable(
         wire,
         app=qt_application,
+        dialog=dialog,
         app_config=app_config,
         tray_icon=tray_icon,
         window_hook=window_hook,
