@@ -37,7 +37,6 @@ class CommandPalette(IProvider):
     }
 
     def __init__(self, context: IProviderContext, /):
-
         super().__init__(context)
         self.context = context
         self.config = CommandPaletteConfig.model_validate(self.context.provider_config)

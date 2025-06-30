@@ -15,4 +15,4 @@ class CommonConfigModel(BaseModel):
 
 class AppConfigModel(BaseModel):
     Common: CommonConfigModel
-    Providers: dict[str,dict]
+    Providers: dict[str, dict]

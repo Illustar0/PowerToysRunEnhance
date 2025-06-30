@@ -33,9 +33,7 @@ class ProviderWorker(QRunnable):
         self.kwargs = kwargs
 
     def run(self):
-
         getattr(self.provider_instance, self.method)(*self.args, **self.kwargs)
-
 
 
 class ProviderRegistry(IProviderRegistry):

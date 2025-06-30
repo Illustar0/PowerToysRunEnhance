@@ -2,7 +2,6 @@ import sys
 from src.core.containers import MainContainer
 
 if __name__ == "__main__":
-    
     container = MainContainer()
     container.wire(modules=[__name__])
 
