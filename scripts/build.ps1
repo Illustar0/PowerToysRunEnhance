@@ -119,7 +119,7 @@ if ($null -ne $env:DEBUG -and $env:DEBUG -eq "DEBUG") {
     --product-name=WindowsSearchUtility `
     --product-version=0.1.0 `
     --file-version=0.1.0 `
-    --file-description="A small tool that non-invasively replaces Windows Search with other tools." `
+    --file-description="WindowsSearchUtility" `
     --copyright="Copyright (c) 2024-2025 Illustar0 | GPLv3 License" `
     --output-filename=WindowsSearchUtility.exe `
     --assume-yes-for-downloads `
@@ -141,7 +141,7 @@ if ($null -ne $env:DEBUG -and $env:DEBUG -eq "DEBUG") {
     --product-name=WindowsSearchUtility `
     --product-version=0.1.0 `
     --file-version=0.1.0 `
-    --file-description="A small tool that non-invasively replaces Windows Search with other tools." `
+    --file-description="WindowsSearchUtility" `
     --copyright="Copyright (c) 2024-2025 Illustar0 | GPLv3 License" `
     --output-filename=WindowsSearchUtility.exe `
     --assume-yes-for-downloads `
