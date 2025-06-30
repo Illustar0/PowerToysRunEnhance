@@ -19,7 +19,7 @@ from src.core.models import InputData
 __VERSION__ = "0.1.0"
 DEFAULT_CONFIG: Final[dict] = {
     "Common": {
-        "auto_focus": False,
+        "auto_focus": True,
         "active_provider": "Command Palette",
         "language": "en_US",
     },
@@ -29,7 +29,7 @@ DEFAULT_CONFIG: Final[dict] = {
         "Listary": {
             "shortcut": "Ctrl-Ctrl",
             "input_speed_factor": 0.3,
-            "setting_delay": 1,
+            "setting_delay": 0.1,
         },
     },
 }
