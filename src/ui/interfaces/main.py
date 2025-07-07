@@ -15,6 +15,7 @@ from qfluentwidgets import (
 )
 
 from src.ui.interfaces.component import BaseCard
+from src.utils import get_base_path
 
 
 class Logo(QWidget):
@@ -124,7 +125,7 @@ class MainInterface(QWidget):
         self.setLayout(self.vBoxLayout)  # 设置主布局
         self.vBoxLayout.addWidget(
             Logo(
-                "./resources/logo.png",
+                str(get_base_path() / "resources" / "logo.png"),
                 "WindowsSearchUtility",
                 self.tr(
                     "A small tool that non-invasively replaces Windows Search with other tools."
@@ -140,7 +141,7 @@ class MainInterface(QWidget):
         self.enableCard = EnableCard(
             self.tr("Enable WindowsSearchUtility"),  # "替换"
             "",
-            QIcon("./resources/logo.png"),
+            QIcon(str(get_base_path() / "resources" / "logo.png")),
             True,
         )
         self.vBoxLayout.addWidget(self.enableCard)

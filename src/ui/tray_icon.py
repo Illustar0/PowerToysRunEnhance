@@ -9,6 +9,7 @@ from qfluentwidgets.common.icon import toQIcon
 from qfluentwidgets.components.material import AcrylicSystemTrayMenu, AcrylicMenu
 
 from src.core.interfaces import ITrayIcon
+from src.utils import get_base_path
 
 
 class TrayIcon(ITrayIcon):
@@ -37,7 +38,7 @@ class TrayIcon(ITrayIcon):
 
     def _init_tray_icon(self):
         self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(QIcon("resources/logo.png"))
+        self.tray_icon.setIcon(QIcon(str(get_base_path() / "resources" / "logo.png")))
         self.tray_icon.setToolTip(self.tr("WindowsSearchUtility"))
         self.tray_icon.activated.connect(self.activated.emit)
         logger.debug("Tray icon loaded")

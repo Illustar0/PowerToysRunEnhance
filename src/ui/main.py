@@ -10,6 +10,7 @@ from qfluentwidgets import (
 
 from src.core.interfaces import IMainWindow
 from src.ui.interfaces.main import MainInterface
+from src.utils import get_base_path
 
 
 class MainWindow(IMainWindow):
@@ -19,7 +20,7 @@ class MainWindow(IMainWindow):
         super().__init__(parent=parent)
 
         self.setWindowTitle("WindowsSearchUtility")
-        self.setWindowIcon(QIcon("./resources/logo.png"))
+        self.setWindowIcon(QIcon(str(get_base_path() / "resources" / "logo.png")))
 
         # 注册子界面
         self.main_interface = MainInterface("Main", version="1.0")
@@ -34,7 +35,9 @@ class MainWindow(IMainWindow):
         self.navigationInterface.addSeparator()
         self.navigationInterface.addWidget(
             routeKey="Avatar",
-            widget=NavigationAvatarWidget("Illustar0", "./resources/Avatar.png"),
+            widget=NavigationAvatarWidget(
+                "Illustar0", str(get_base_path() / "resources" / "Avatar.png")
+            ),
             position=NavigationItemPosition.BOTTOM,
         )
         self.addSubInterface(

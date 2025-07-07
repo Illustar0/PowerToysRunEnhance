@@ -1,7 +1,5 @@
 import importlib
 import inspect
-import sys
-from pathlib import Path
 from typing import List, Optional, Dict, Type
 
 from PySide6.QtCore import (
@@ -12,6 +10,7 @@ from PySide6.QtCore import (
     QMutexLocker,
 )
 from loguru import logger
+
 from src.core.interfaces import (
     IProvider,
     IProviderSettingGUI,
@@ -22,6 +21,7 @@ from src.core.interfaces import (
     IProviderManager,
 )
 from src.core.models import ProviderMeta
+from src.utils import get_base_path
 
 
 class ProviderWorker(QRunnable):
@@ -56,11 +56,7 @@ class ProviderRegistry(IProviderRegistry):
 
     def _load_providers(self):
         """加载 current_provider / 所有 provider"""
-        if "__compiled__" in globals():
-            logger.debug("Running in a Nuitka bundle")
-            providers_dir = Path(sys.executable).parent / "providers"
-        else:
-            providers_dir = Path(__file__).parent.parent / "providers"
+        providers_dir = get_base_path() / "providers"
         logger.debug(f"Base providers path: {providers_dir}")
         for file in providers_dir.glob("*.py"):
             if file.name.startswith("__"):

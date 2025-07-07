@@ -1,6 +1,7 @@
 import ctypes
 import sys
 import winreg
+from pathlib import Path
 
 import psutil
 import win32api
@@ -122,6 +123,13 @@ def get_run_at_startup() -> bool:
         except Exception as e:
             logger.error(f"Error occurred when trying get run at startup: {e}")
             return False
+
+
+def get_base_path() -> Path:
+    if "__compiled__" in globals():
+        return Path(sys.executable).parent
+    else:
+        return Path(sys.path[0])
 
 
 def enable_run_at_startup():
