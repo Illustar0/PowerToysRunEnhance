@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod, ABCMeta
 from collections import deque
 from typing import Protocol, Optional, Any
 
-from PySide6.QtCore import QObject, Signal
-from PySide6.QtWidgets import QWidget
-from qfluentwidgets import FluentWindow
+from PySide6.QtCore import QObject, Signal, QAbstractNativeEventFilter
+from PySide6.QtWidgets import QWidget, QSystemTrayIcon
+from qfluentwidgets import FluentWindow, Theme
 
 from src.core.models import CommonConfigModel, AppConfigModel
 from src.core.models import InputData
@@ -22,6 +22,10 @@ class WindowABCMeta(type(FluentWindow), ABCMeta):
     pass
 
 
+class NativeEventFilterABCMeta(type(QAbstractNativeEventFilter), ABCMeta):
+    pass
+
+
 class IProviderContext(Protocol):
     """Provider 上下文接口"""
 
@@ -33,12 +37,25 @@ class IProviderContext(Protocol):
     user_input: Optional[deque[InputData]]
 
 
+class IFluentWindow(FluentWindow, ABC, metaclass=WindowABCMeta):
+    @abstractmethod
+    def on_tray_icon_activated(self,reason:QSystemTrayIcon.ActivationReason):
+        pass
+
+
+
 class IProviderMeta(Protocol):
     """Provider 元数据接口"""
 
     provider_name: str
     provider_process_name: list[str]
     required_config: Optional[str]
+
+
+class INativeEventFilter(
+    QAbstractNativeEventFilter, QObject, ABC, metaclass=NativeEventFilterABCMeta
+):
+    themeChanged = Signal(Theme)
 
 
 class IProviderSettingGUI(QWidget, ABC, metaclass=QWidgetABCMeta):
@@ -246,10 +263,11 @@ class IConfigurationService(QObject, ABC, metaclass=QObjectABCMeta):
 
 
 class ITrayIcon(QWidget, ABC, metaclass=QWidgetABCMeta):
-    """主 Presenter 接口"""
+    """TrayIcon"""
 
     enable_changed = Signal(bool)
     request_reset_status = Signal()
+    activated = Signal(QSystemTrayIcon.ActivationReason)
 
     @abstractmethod
     def set_enabled(self, enabled: bool) -> None:
@@ -260,6 +278,11 @@ class ITrayIcon(QWidget, ABC, metaclass=QWidgetABCMeta):
     def show(self):
         pass
 
+    @abstractmethod
+    def refresh_enable_icon(self):
+        """强制刷新 Enable 的 Icon"""
+        pass
+
 
 class ITrayIconPresenter(QObject, ABC, metaclass=QObjectABCMeta):
     """主 Presenter 接口"""
@@ -268,6 +291,10 @@ class ITrayIconPresenter(QObject, ABC, metaclass=QObjectABCMeta):
 
     @abstractmethod
     def request_reset_status(self):
+        pass
+
+    @abstractmethod
+    def on_theme_changed(self):
         pass
 
 

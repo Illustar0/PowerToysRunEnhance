@@ -1,4 +1,5 @@
 import ctypes
+import winreg
 
 import win32api
 import win32con
@@ -25,6 +26,7 @@ def get_process_path(hwnd) -> str:
         return process_name
     except:
         return ""
+
 
 # So Microsoft, fuck you!
 class AggressiveDialog(IAggressiveDialog):
@@ -63,3 +65,18 @@ def force_set_foreground_window(hwnd: int):
         user32.SetFocus(hwnd)
     finally:
         user32.AttachThreadInput(foreground_thread_id, current_thread_id, False)
+
+
+def get_app_current_theme():
+    key = winreg.OpenKey(
+        winreg.HKEY_CURRENT_USER,
+        r"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+        0,
+        winreg.KEY_READ,
+    )
+    value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
+    winreg.CloseKey(key)
+    if value == 1:
+        return "light"
+    else:
+        return "dark"

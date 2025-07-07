@@ -1,4 +1,5 @@
 import os
+
 from PySide6.QtCore import Slot, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QSystemTrayIcon, QApplication
@@ -7,14 +8,13 @@ from qfluentwidgets import Action, FluentIcon
 from qfluentwidgets.common.icon import toQIcon
 from qfluentwidgets.components.material import AcrylicSystemTrayMenu, AcrylicMenu
 
-
 from src.core.interfaces import ITrayIcon
 
 
 class TrayIcon(ITrayIcon):
     enable_changed = Signal(bool)
     request_reset_status = Signal()
-
+    activated = Signal(QSystemTrayIcon.ActivationReason)
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -37,6 +37,7 @@ class TrayIcon(ITrayIcon):
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(QIcon("resources/logo.png"))
         self.tray_icon.setToolTip(self.tr("WindowsSearchUtility"))
+        self.tray_icon.activated.connect(self.activated.emit)
         logger.debug("Tray icon loaded")
 
         self.menu = AcrylicSystemTrayMenu()
@@ -82,7 +83,7 @@ class TrayIcon(ITrayIcon):
 
         self.tray_icon.setContextMenu(self.menu)
 
-        self.enable_changed.connect(self.change_enable_icon)
+        self.enable_changed.connect(self._change_enable_icon)
 
     def show(self):
         self.tray_icon.show()
@@ -90,11 +91,18 @@ class TrayIcon(ITrayIcon):
     @Slot(bool)
     def set_enabled(self, enabled: bool):
         self.enable_action.setChecked(enabled)
-        self.change_enable_icon(enabled)
+        self._change_enable_icon(enabled)
 
     @Slot(bool)
-    def change_enable_icon(self, enabled: bool):
+    def _change_enable_icon(self, enabled: bool):
         if enabled:
+            self.enable_action.setIcon(toQIcon(FluentIcon.ACCEPT))
+        else:
+            self.enable_action.setIcon(QIcon())
+
+    def refresh_enable_icon(self):
+        """强制刷新 Enable 的 Icon"""
+        if self.enable_action.isChecked():
             self.enable_action.setIcon(toQIcon(FluentIcon.ACCEPT))
         else:
             self.enable_action.setIcon(QIcon())

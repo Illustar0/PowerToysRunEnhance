@@ -7,9 +7,10 @@ from dependency_injector import containers, providers
 from src.core.hook import WindowHookWorker, KeyboardHookWorker
 from src.core.model import ApplicationModel, ConfigurationService
 from src.core.models import ProviderContext
-from src.core.presenter import TrayIconPresenter
+from src.core.presenter import TrayIconPresenter, NativeEventFilter
 from src.core.provider_manager import ProviderManager, ProviderRegistry, ProviderFactory
 from src.core.wiring import wire
+from src.ui.main import MainWindow
 from src.ui.tray_icon import TrayIcon
 from src.utils import AggressiveDialog
 
@@ -34,6 +35,7 @@ class MainContainer(containers.DeclarativeContainer):
 
     # UI
     tray_icon = providers.Singleton(TrayIcon)
+    main_window = providers.Singleton(MainWindow)
 
     # Worker
     window_hook = providers.Singleton(
@@ -51,6 +53,7 @@ class MainContainer(containers.DeclarativeContainer):
     provider_manager = provider_manager
 
     # Presenter
+    native_event_filter = providers.Singleton(NativeEventFilter)
     tray_icon_presenter = providers.Singleton(
         TrayIconPresenter, application_model=app, tray_icon=tray_icon
     )
@@ -73,10 +76,12 @@ class MainContainer(containers.DeclarativeContainer):
         dialog=dialog,
         app_config=app_config,
         tray_icon=tray_icon,
+        main_window=main_window,
         window_hook=window_hook,
         keyboard_hook=keyboard_hook,
         provider_manager=provider_manager,
         tray_icon_presenter=tray_icon_presenter,
+        native_event_filter=native_event_filter,
         window_hook_thread=window_hook_thread,
         keyboard_hook_thread=keyboard_hook_thread,
         provider_manager_thread=provider_manager_thread,

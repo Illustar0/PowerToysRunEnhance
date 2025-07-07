@@ -1,6 +1,7 @@
 from PySide6.QtCore import QThread, Qt
 from PySide6.QtWidgets import QApplication
 from loguru import logger
+from qfluentwidgets import setTheme
 
 from src.core.interfaces import (
     IConfigurationService,
@@ -10,6 +11,8 @@ from src.core.interfaces import (
     IProviderManager,
     ITrayIconPresenter,
     IAggressiveDialog,
+    IFluentWindow,
+    INativeEventFilter,
 )
 
 
@@ -18,10 +21,12 @@ def wire(
     dialog: IAggressiveDialog,
     app_config: IConfigurationService,
     tray_icon: ITrayIcon,
+    main_window: IFluentWindow,
     window_hook: IWindowHook,
     keyboard_hook: IKeyboardHook,
     provider_manager: IProviderManager,
     tray_icon_presenter: ITrayIconPresenter,
+    native_event_filter: INativeEventFilter,
     window_hook_thread: QThread,
     keyboard_hook_thread: QThread,
     provider_manager_thread: QThread,
@@ -50,8 +55,13 @@ def wire(
     # tray_icon connections
     tray_icon.enable_changed.connect(keyboard_hook.set_enabled)
     tray_icon.enable_changed.connect(window_hook.set_enabled)
+    tray_icon.activated.connect(main_window.on_tray_icon_activated)
 
     tray_icon_presenter.reset_status.connect(keyboard_hook.stop_listening)
+
+    # NativeEventFilter
+    native_event_filter.themeChanged.connect(setTheme)
+    native_event_filter.themeChanged.connect(tray_icon_presenter.on_theme_changed)
 
     # 线程启动连接
     window_hook_thread.started.connect(window_hook.set_hook)
