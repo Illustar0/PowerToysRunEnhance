@@ -12,7 +12,8 @@ if __name__ == "__main__":
     container.wire(modules=[__name__])
 
     app = container.qt_application()
-
+    if app.is_running:
+        sys.exit(0)
     container.wiring()
 
     native_event_filter = container.native_event_filter()

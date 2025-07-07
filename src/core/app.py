@@ -25,7 +25,6 @@ class WSUApplication(IQApplication):
             self._socket.flush()
             logger.error("Another instance of the application is already running.")
             self.is_running = True
-            self.quit()
         else:
             self.is_running = False
             self._server = QLocalServer()
