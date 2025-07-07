@@ -69,14 +69,13 @@ def force_set_foreground_window(hwnd: int):
 
 
 def get_app_current_theme():
-    key = winreg.OpenKey(
+    with winreg.OpenKey(
         winreg.HKEY_CURRENT_USER,
         r"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize",
         0,
         winreg.KEY_READ,
-    )
-    value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
-    winreg.CloseKey(key)
+    ) as key:
+        value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
     if value == 1:
         return "light"
     else:
