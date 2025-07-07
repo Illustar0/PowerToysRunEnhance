@@ -61,10 +61,9 @@ jobs:
         id: build
         env:
           NEW_VERSION: ${{ needs.prepare.outputs.version }}
-          GITHUB_ACTIONS: "true"
           ARCH: ${{ matrix.arch }}
           PYTHON: "cpython-3.12.9-windows-${{matrix.arch}}-none"
-          USE_UPX: false
+          USE_UPX: "false"
         run: .\scripts\build.ps1
 
       - name: Cache build artifacts
