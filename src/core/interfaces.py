@@ -3,7 +3,7 @@ from collections import deque
 from typing import Protocol, Optional, Any
 
 from PySide6.QtCore import QObject, Signal, QAbstractNativeEventFilter
-from PySide6.QtWidgets import QWidget, QSystemTrayIcon
+from PySide6.QtWidgets import QWidget, QSystemTrayIcon, QApplication
 from qfluentwidgets import FluentWindow, Theme
 
 from src.core.models import CommonConfigModel, AppConfigModel
@@ -22,6 +22,10 @@ class WindowABCMeta(type(FluentWindow), ABCMeta):
     pass
 
 
+class QApplicationABCMeta(type(QApplication), ABCMeta):
+    pass
+
+
 class NativeEventFilterABCMeta(type(QAbstractNativeEventFilter), ABCMeta):
     pass
 
@@ -37,11 +41,16 @@ class IProviderContext(Protocol):
     user_input: Optional[deque[InputData]]
 
 
-class IFluentWindow(FluentWindow, ABC, metaclass=WindowABCMeta):
+class IMainWindow(FluentWindow, ABC, metaclass=WindowABCMeta):
+    enable_changed = Signal(bool)
+
     @abstractmethod
-    def on_tray_icon_activated(self,reason:QSystemTrayIcon.ActivationReason):
+    def on_tray_icon_activated(self, reason: QSystemTrayIcon.ActivationReason):
         pass
 
+    @abstractmethod
+    def set_enabled(self, enabled: bool):
+        pass
 
 
 class IProviderMeta(Protocol):
@@ -327,6 +336,16 @@ class IApplicationModel(QObject, ABC, metaclass=QObjectABCMeta):
     @abstractmethod
     def set_active_provider(self, provider_name: str) -> str:
         """设置活动 Provider"""
+        pass
+
+
+class IQApplication(QApplication, ABC, metaclass=QApplicationABCMeta):
+    messageReceived = Signal(str)
+
+
+class IMainWindowPresenter(QObject, ABC, metaclass=QObjectABCMeta):
+    @abstractmethod
+    def on_message_received(self, message: str):
         pass
 
 

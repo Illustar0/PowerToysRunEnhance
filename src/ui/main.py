@@ -1,33 +1,36 @@
-from typing import Dict
-
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QWidget, QSystemTrayIcon
+from PySide6.QtCore import QTimer, Signal
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QSystemTrayIcon
 from qfluentwidgets import (
-    FluentWindow,
     FluentIcon,
     NavigationAvatarWidget,
     NavigationItemPosition,
     isDarkTheme,
 )
 
-from src.core.interfaces import IFluentWindow
+from src.core.interfaces import IMainWindow
 from src.ui.interfaces.main import MainInterface
-from src.ui.interfaces.setting import SettingInterface
 
 
-class MainWindow(IFluentWindow):
+class MainWindow(IMainWindow):
+    enable_changed = Signal(bool)
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.interfaces: Dict[str, QWidget] = {}
+
+        self.setWindowTitle("WindowsSearchUtility")
+        self.setWindowIcon(QIcon("./resources/logo.png"))
 
         # 注册子界面
-        self.interfaces["Main"] = MainInterface("Main", version="1.0")
-        self.interfaces["Setting"] = SettingInterface("Setting")
+        self.main_interface = MainInterface("Main", version="1.0")
+        self.main_interface.enable_changed.connect(self.enable_changed.emit)
+
+        self.setting_interface = MainInterface("Main", version="1.0")
 
         self.init_navigation()
 
     def init_navigation(self):
-        self.addSubInterface(self.interfaces["Main"], FluentIcon.HOME, "Home")
+        self.addSubInterface(self.main_interface, FluentIcon.HOME, "Home")
         self.navigationInterface.addSeparator()
         self.navigationInterface.addWidget(
             routeKey="Avatar",
@@ -35,11 +38,14 @@ class MainWindow(IFluentWindow):
             position=NavigationItemPosition.BOTTOM,
         )
         self.addSubInterface(
-            self.interfaces["Setting"],
+            self.setting_interface,
             FluentIcon.SETTING,
             "Settings",
             NavigationItemPosition.BOTTOM,
         )
+
+    def set_enabled(self, enabled: bool):
+        self.main_interface.enableCard.set_enabled(enabled)
 
     def _onThemeChangedFinished(self):
         super()._onThemeChangedFinished()
@@ -56,8 +62,11 @@ class MainWindow(IFluentWindow):
         处理托盘图标的激活事件
         """
         if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
-            self.showNormal()
-            self.activateWindow()
+            self.show()
+
+    def show(self):
+        self.showNormal()
+        self.activateWindow()
 
     def closeEvent(self, event):
         # 忽略退出事件

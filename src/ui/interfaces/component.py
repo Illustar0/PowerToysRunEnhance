@@ -11,7 +11,9 @@ from qfluentwidgets import (
 
 
 class BaseCard(CardWidget):
-    def __init__(self, title: str, content: str, icon: QIcon | str | FluentIconBase, parent=None):
+    def __init__(
+        self, title: str, content: str, icon: QIcon | str | FluentIconBase, parent=None
+    ):
         super().__init__(parent)
 
         self.titleLabel = BodyLabel(title, self)

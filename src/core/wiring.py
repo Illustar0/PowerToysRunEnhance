@@ -1,5 +1,4 @@
 from PySide6.QtCore import QThread, Qt
-from PySide6.QtWidgets import QApplication
 from loguru import logger
 from qfluentwidgets import setTheme
 
@@ -11,21 +10,26 @@ from src.core.interfaces import (
     IProviderManager,
     ITrayIconPresenter,
     IAggressiveDialog,
-    IFluentWindow,
+    IMainWindow,
     INativeEventFilter,
+    IQApplication,
+    IMainWindowPresenter,
+    IApplicationModel,
 )
 
 
 def wire(
-    app: QApplication,
+    app: IQApplication,
+    app_model: IApplicationModel,
     dialog: IAggressiveDialog,
     app_config: IConfigurationService,
     tray_icon: ITrayIcon,
-    main_window: IFluentWindow,
+    main_window: IMainWindow,
     window_hook: IWindowHook,
     keyboard_hook: IKeyboardHook,
     provider_manager: IProviderManager,
     tray_icon_presenter: ITrayIconPresenter,
+    main_window_presenter: IMainWindowPresenter,
     native_event_filter: INativeEventFilter,
     window_hook_thread: QThread,
     keyboard_hook_thread: QThread,
@@ -65,6 +69,11 @@ def wire(
 
     # 线程启动连接
     window_hook_thread.started.connect(window_hook.set_hook)
+
+    app_model.enabled_changed.connect(window_hook.set_enabled)
+    app_model.enabled_changed.connect(keyboard_hook.set_enabled)
+
+    app.messageReceived.connect(main_window_presenter.on_message_received)
 
     # 应用退出清理
     app.aboutToQuit.connect(window_hook.unset_hook)

@@ -5,7 +5,7 @@ from os import PathLike
 from typing import Dict, List, Optional, Any, Final
 
 import tomlkit
-from PySide6.QtCore import Signal, QFileSystemWatcher, Slot
+from PySide6.QtCore import Signal, QFileSystemWatcher
 from loguru import logger
 
 from src.core.interfaces import (
@@ -87,7 +87,9 @@ class ApplicationModel(IApplicationModel):
         if self._enabled != enabled:
             self._enabled = enabled
             self.enabled_changed.emit(enabled)
-            self._logger.info(f"The application enabled status has been changed to: {enabled}")
+            self._logger.info(
+                f"The application enabled status has been changed to: {enabled}"
+            )
 
     def get_version(self) -> str:
         """获取版本"""

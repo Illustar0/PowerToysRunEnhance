@@ -15,6 +15,7 @@ class TrayIcon(ITrayIcon):
     enable_changed = Signal(bool)
     request_reset_status = Signal()
     activated = Signal(QSystemTrayIcon.ActivationReason)
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 

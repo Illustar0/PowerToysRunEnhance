@@ -5,7 +5,13 @@ from PySide6.QtCore import Signal, Slot, QObject, QAbstractNativeEventFilter
 from loguru import logger
 from qfluentwidgets import Theme, qconfig
 
-from src.core.interfaces import ITrayIconPresenter, ITrayIcon, IApplicationModel
+from src.core.interfaces import (
+    ITrayIconPresenter,
+    ITrayIcon,
+    IApplicationModel,
+    IMainWindowPresenter,
+    IMainWindow,
+)
 from src.utils import get_app_current_theme
 
 
@@ -57,3 +63,21 @@ class TrayIconPresenter(ITrayIconPresenter):
     def on_theme_changed(self):
         """强制刷新 Enable 图标"""
         self.tray_icon.refresh_enable_icon()
+
+
+class MainWindowPresenter(IMainWindowPresenter):
+    reset_status = Signal()
+
+    def __init__(self, main_window: IMainWindow, application_model: IApplicationModel):
+        super().__init__()
+        self.main_window = main_window
+        self.app = application_model
+
+        self.main_window.enable_changed.connect(self.app.set_enabled)
+
+        self.app.enabled_changed.connect(self.main_window.set_enabled)
+
+    @Slot(str)
+    def on_message_received(self, message: str):
+        if message == "show":
+            self.main_window.show()

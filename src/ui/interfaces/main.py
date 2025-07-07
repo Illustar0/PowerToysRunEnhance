@@ -18,7 +18,13 @@ from src.ui.interfaces.component import BaseCard
 
 
 class Logo(QWidget):
-    def __init__(self, icon:str | QImage | QPixmap, title:str, description:str, parent:QWidget=None):
+    def __init__(
+        self,
+        icon: str | QImage | QPixmap,
+        title: str,
+        description: str,
+        parent: QWidget = None,
+    ):
         super().__init__(parent)
 
         self.avatarWidget = AvatarWidget(icon, self)
@@ -47,7 +53,7 @@ class AboutCard(BaseCard):
         title: str,
         content: str,
         button_title: str,
-        button_url:str,
+        button_url: str,
         icon: QIcon | str | FluentIconBase,
     ):
         super().__init__(title, content, icon)
@@ -66,7 +72,7 @@ class VersionCard(BaseCard):
         content: str,
         button_title,
         icon: QIcon | str | FluentIconBase,
-        on_check_update: Callable|None=None,
+        on_check_update: Callable | None = None,
     ):
         super().__init__(title, content, icon)
         self.checkUpdateButton = PushButton(button_title, self)
@@ -79,7 +85,7 @@ class VersionCard(BaseCard):
 class EnableCard(BaseCard):
     """Function Setting Card"""
 
-    enable = Signal(bool)
+    enable_changed = Signal(bool)
 
     def __init__(
         self,
@@ -93,12 +99,19 @@ class EnableCard(BaseCard):
 
         self.switchButton = SwitchButton(self)
         self.switchButton.setChecked(default_value)
-        self.switchButton.checkedChanged.connect(self.enable)
+        self.switchButton.checkedChanged.connect(
+            lambda: self.enable_changed.emit(self.switchButton.isChecked())
+        )
         self.hBoxLayout.addWidget(self.switchButton)
         self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
+    def set_enabled(self, enabled: bool):
+        self.switchButton.setChecked(enabled)
+
 
 class MainInterface(QWidget):
+    enable_changed = Signal(bool)
+
     def __init__(self, title: str, version: str, parent=None):
         super().__init__(parent)
         self.setObjectName(title.replace(" ", "-"))
@@ -131,6 +144,8 @@ class MainInterface(QWidget):
             True,
         )
         self.vBoxLayout.addWidget(self.enableCard)
+        self.enableCard.enable_changed.connect(self.enable_changed.emit)
+
         # 添加 VersionCard
         self.vBoxLayout.addWidget(
             VersionCard(
@@ -142,6 +157,7 @@ class MainInterface(QWidget):
                 FluentIcon.UPDATE,
             )
         )
+
         # 添加 AboutCard
         self.vBoxLayout.addWidget(
             AboutCard(
