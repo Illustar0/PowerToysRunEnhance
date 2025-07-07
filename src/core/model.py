@@ -75,8 +75,8 @@ class ApplicationModel(IApplicationModel):
         self._config_service = config_service
         self._logger = logger
         self._enabled = True
-        self._active_provider = "Command Palette"
-        self._version = "1.0.0"
+        self._active_provider = config_service.data.Common.active_provider
+        self._version = __VERSION__
 
     def is_enabled(self) -> bool:
         """是否启用"""
