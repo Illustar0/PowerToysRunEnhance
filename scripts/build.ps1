@@ -103,52 +103,53 @@ if ($null -ne $env:GITHUB_ACTIONS -and $env:GITHUB_ACTIONS -eq "true") {
 }
 #>
 
-if ($null -ne $env:DEBUG -and $env:DEBUG -eq "DEBUG") {
-    uv run nuitka --mingw64 `
-    --lto=yes `
-    --standalone `
-    --follow-imports `
-    --include-module=comtypes.stream `
-    --include-module=scipy._cyutility `
-    --enable-plugin=pyside6 `
-    --enable-plugin=upx `
-    --include-data-files=./src/providers/*.py=providers/ `
-    --include-data-dir=./src/resources=resources `
-    --include-package=src.providers `
-    --windows-icon-from-ico=./src/resources/logo.ico `
-    --product-name=WindowsSearchUtility `
-    --product-version=0.1.0 `
-    --file-version=0.1.0 `
-    --file-description="WindowsSearchUtility" `
-    --copyright="Copyright (c) 2024-2025 Illustar0 | GPLv3 License" `
-    --output-filename=WindowsSearchUtility.exe `
-    --assume-yes-for-downloads `
-    src/main.py
-} else {
-    uv run nuitka --mingw64 `
-    --lto=yes `
-    --standalone `
-    --follow-imports `
-    --include-module=comtypes.stream `
-    --include-module=scipy._cyutility `
-    --enable-plugin=pyside6 `
-    --enable-plugin=upx `
-    --include-data-files=./src/providers/*.py=providers/ `
-    --include-data-dir=./src/resources=resources `
-    --include-package=src.providers `
-    --windows-console-mode=disable `
-    --windows-icon-from-ico=./src/resources/logo.ico `
-    --product-name=WindowsSearchUtility `
-    --product-version=0.1.0 `
-    --file-version=0.1.0 `
-    --file-description="WindowsSearchUtility" `
-    --copyright="Copyright (c) 2024-2025 Illustar0 | GPLv3 License" `
-    --output-filename=WindowsSearchUtility.exe `
-    --assume-yes-for-downloads `
-    --deployment `
-    src/main.py
 
+$nuitkaArgs = @(
+    "--mingw64",
+    "--lto=yes",
+    "--standalone",
+    "--follow-imports",
+    "--include-module=comtypes.stream",
+    "--include-module=scipy._cyutility",
+    "--enable-plugin=pyside6",
+    "--include-data-files=./src/providers/*.py=providers/",
+    "--include-data-dir=./src/resources=resources",
+    "--include-package=src.providers",
+    "--windows-icon-from-ico=./src/resources/logo.ico",
+    "--product-name=WindowsSearchUtility",
+    "--product-version=$env:NEW_VERSION",
+    "--file-version=$env:NEW_VERSION",
+    "--file-description=WindowsSearchUtility",
+    "--copyright=Copyright (c) 2024-2025 Illustar0 | GPLv3 License",
+    "--output-filename=WindowsSearchUtility.exe",
+    "--assume-yes-for-downloads"
+)
+
+
+if ($null -ne $env:USE_UPX) {
+    Write-Host "USE_UPX environment variable is set. Enabling UPX plugin." -ForegroundColor Green
+    $nuitkaArgs += "--enable-plugin=upx"
+} else {
+    Write-Host "USE_UPX environment variable not set. UPX plugin will be disabled." -ForegroundColor Yellow
 }
+
+
+if ($null -ne $env:DEBUG -and $env:DEBUG -eq "DEBUG") {
+    Write-Host "Building in DEBUG mode..." -ForegroundColor Cyan
+} else {
+    Write-Host "Building in RELEASE mode..." -ForegroundColor Cyan
+    $nuitkaArgs += "--windows-console-mode=disable"
+    $nuitkaArgs += "--deployment"
+}
+
+$nuitkaArgs += "src/main.py"
+
+Write-Host "Running Nuitka with the following arguments:"
+
+$nuitkaArgs | ForEach-Object { Write-Host "  $_" }
+
+uv run nuitka @nuitkaArgs
+
 if ($LASTEXITCODE -ne 0) {
     Write-Host "编译项目失败！"
     exit $LASTEXITCODE

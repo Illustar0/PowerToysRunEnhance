@@ -37,10 +37,10 @@ jobs:
       - name: Build | Build WindowsSearchUtility
         env:
           NEW_VERSION: "0.1.0"
-          GITHUB_ACTIONS: "true"
           ARCH: ${{ matrix.arch }}
           DEBUG: ${{ matrix.debug }}
           PYTHON: "cpython-3.12.9-windows-${{ matrix.arch }}-none"
+          USE_UPX: false
         run: |
           .\scripts\build.ps1
 
