@@ -1,4 +1,5 @@
 import ctypes
+import sys
 import winreg
 
 import psutil
@@ -6,6 +7,7 @@ import win32api
 import win32con
 import win32process
 from PySide6.QtCore import Qt
+from loguru import logger
 
 from src.core.interfaces import IAggressiveDialog
 
@@ -80,6 +82,71 @@ def get_app_current_theme():
         return "light"
     else:
         return "dark"
+
+
+def touch_run_at_startup():
+    with winreg.OpenKey(
+        winreg.HKEY_CURRENT_USER,
+        r"Software\Microsoft\Windows\CurrentVersion\Run",
+        0,
+        winreg.KEY_ALL_ACCESS,
+    ) as key:
+        try:
+            value, _ = winreg.QueryValueEx(key, "WindowsSearchUtility")
+            if value != sys.executable:
+                winreg.SetValueEx(
+                    key, "WindowsSearchUtility", 0, winreg.REG_SZ, sys.executable
+                )
+        except FileNotFoundError:
+            winreg.SetValueEx(
+                key, "WindowsSearchUtility", 0, winreg.REG_SZ, sys.executable
+            )
+        except Exception as e:
+            logger.error(f"Error occurred when trying touch run at startup: {e}")
+
+
+def get_run_at_startup() -> bool:
+    with winreg.OpenKey(
+        winreg.HKEY_CURRENT_USER,
+        r"Software\Microsoft\Windows\CurrentVersion\Run",
+        0,
+        winreg.KEY_READ,
+    ) as key:
+        try:
+            value, _ = winreg.QueryValueEx(key, "WindowsSearchUtility")
+            if value != sys.executable:
+                return False
+            return True
+        except FileNotFoundError:
+            return False
+        except Exception as e:
+            logger.error(f"Error occurred when trying get run at startup: {e}")
+            return False
+
+
+def enable_run_at_startup():
+    with winreg.OpenKey(
+        winreg.HKEY_CURRENT_USER,
+        r"Software\Microsoft\Windows\CurrentVersion\Run",
+        0,
+        winreg.KEY_WRITE,
+    ) as key:
+        winreg.SetValueEx(key, "WindowsSearchUtility", 0, winreg.REG_SZ, sys.executable)
+
+
+def disable_run_at_startup():
+    with winreg.OpenKey(
+        winreg.HKEY_CURRENT_USER,
+        r"Software\Microsoft\Windows\CurrentVersion\Run",
+        0,
+        winreg.KEY_WRITE,
+    ) as key:
+        try:
+            winreg.DeleteValue(key, "WindowsSearchUtility")
+        except FileNotFoundError:
+            logger.error("Key not found.")
+        except Exception as e:
+            logger.error(f"Error occurred when trying disable run at startup: {e}")
 
 
 def find_processes_by_name(target_names: list | set) -> bool:

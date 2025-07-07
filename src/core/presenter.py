@@ -12,7 +12,12 @@ from src.core.interfaces import (
     IMainWindowPresenter,
     IMainWindow,
 )
-from src.utils import get_app_current_theme
+from src.utils import (
+    get_app_current_theme,
+    enable_run_at_startup,
+    disable_run_at_startup,
+    get_run_at_startup,
+)
 
 
 class NativeEventFilter(QAbstractNativeEventFilter, QObject):
@@ -50,7 +55,12 @@ class TrayIconPresenter(ITrayIconPresenter):
         self.tray_icon = tray_icon
         self.app = application_model
 
+        self.tray_icon.set_run_at_startup_enabled(get_run_at_startup())
+
         self.tray_icon.request_reset_status.connect(self.request_reset_status)
+        self.tray_icon.run_at_startup_action_triggered.connect(
+            self.on_run_at_startup_action_triggered
+        )
         self.tray_icon.enable_changed.connect(self.app.set_enabled)
 
         self.app.enabled_changed.connect(self.tray_icon.set_enabled)
@@ -63,6 +73,12 @@ class TrayIconPresenter(ITrayIconPresenter):
     def on_theme_changed(self):
         """强制刷新 Enable 图标"""
         self.tray_icon.refresh_enable_icon()
+
+    def on_run_at_startup_action_triggered(self, enabled: bool):
+        if enabled:
+            enable_run_at_startup()
+        else:
+            disable_run_at_startup()
 
 
 class MainWindowPresenter(IMainWindowPresenter):

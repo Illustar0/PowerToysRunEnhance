@@ -15,6 +15,7 @@ class TrayIcon(ITrayIcon):
     enable_changed = Signal(bool)
     request_reset_status = Signal()
     activated = Signal(QSystemTrayIcon.ActivationReason)
+    run_at_startup_action_triggered = Signal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -74,6 +75,21 @@ class TrayIcon(ITrayIcon):
         self.menu.addAction(self.enable_action)
         self.menu.addSeparator()
         self.menu.addMenu(self.advanced_menu)
+        self.run_at_startup_action = Action(
+            QIcon(),
+            self.tr("Run at startup"),
+            checkable=True,
+            checked=False,
+            triggered=lambda: self.run_at_startup_action_triggered.emit(
+                self.run_at_startup_action.isChecked()
+            ),
+        )
+        self.run_at_startup_action_triggered.connect(
+            self._change_run_at_startup_enable_icon
+        )
+        self.menu.addAction(self.run_at_startup_action)
+        self.menu.addSeparator()
+
         self.menu.addAction(
             Action(
                 FluentIcon.POWER_BUTTON,
@@ -101,9 +117,25 @@ class TrayIcon(ITrayIcon):
         else:
             self.enable_action.setIcon(QIcon())
 
+    @Slot(bool)
+    def _change_run_at_startup_enable_icon(self, enabled: bool):
+        if enabled:
+            self.run_at_startup_action.setIcon(toQIcon(FluentIcon.ACCEPT))
+        else:
+            self.run_at_startup_action.setIcon(QIcon())
+
+    def set_run_at_startup_enabled(self, enabled: bool):
+        self.run_at_startup_action.setChecked(enabled)
+        self._change_run_at_startup_enable_icon(enabled)
+
     def refresh_enable_icon(self):
-        """强制刷新 Enable 的 Icon"""
+        """强制刷新 Icon"""
         if self.enable_action.isChecked():
             self.enable_action.setIcon(toQIcon(FluentIcon.ACCEPT))
         else:
             self.enable_action.setIcon(QIcon())
+
+        if self.run_at_startup_action.isChecked():
+            self.run_at_startup_action.setIcon(toQIcon(FluentIcon.ACCEPT))
+        else:
+            self.run_at_startup_action.setIcon(QIcon())

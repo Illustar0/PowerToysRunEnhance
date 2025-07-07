@@ -277,10 +277,15 @@ class ITrayIcon(QWidget, ABC, metaclass=QWidgetABCMeta):
     enable_changed = Signal(bool)
     request_reset_status = Signal()
     activated = Signal(QSystemTrayIcon.ActivationReason)
+    run_at_startup_action_triggered = Signal(bool)
 
     @abstractmethod
     def set_enabled(self, enabled: bool) -> None:
         """切换启用状态"""
+        pass
+
+    @abstractmethod
+    def set_run_at_startup_enabled(self, enabled: bool):
         pass
 
     @abstractmethod
