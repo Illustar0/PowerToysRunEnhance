@@ -126,7 +126,7 @@ $nuitkaArgs = @(
 )
 
 
-if ($null -ne $env:USE_UPX) {
+if ($env:USE_UPX -eq "true") {
     Write-Host "USE_UPX environment variable is set. Enabling UPX plugin." -ForegroundColor Green
     $nuitkaArgs += "--enable-plugin=upx"
 } else {
@@ -134,7 +134,7 @@ if ($null -ne $env:USE_UPX) {
 }
 
 
-if ($null -ne $env:DEBUG -and $env:DEBUG -eq "DEBUG") {
+if ($env:DEBUG -eq "DEBUG") {
     Write-Host "Building in DEBUG mode..." -ForegroundColor Cyan
 } else {
     Write-Host "Building in RELEASE mode..." -ForegroundColor Cyan

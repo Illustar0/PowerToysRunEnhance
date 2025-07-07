@@ -40,7 +40,7 @@ jobs:
           ARCH: ${{ matrix.arch }}
           DEBUG: ${{ matrix.debug }}
           PYTHON: "cpython-3.12.9-windows-${{ matrix.arch }}-none"
-          USE_UPX: false
+          USE_UPX: "false"
         run: |
           .\scripts\build.ps1
 
