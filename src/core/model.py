@@ -87,7 +87,7 @@ class ApplicationModel(IApplicationModel):
         if self._enabled != enabled:
             self._enabled = enabled
             self.enabled_changed.emit(enabled)
-            self._logger.info(f"应用启用状态已更改为: {enabled}")
+            self._logger.info(f"The application enabled status has been changed to: {enabled}")
 
     def get_version(self) -> str:
         """获取版本"""
@@ -102,7 +102,7 @@ class ApplicationModel(IApplicationModel):
         if self._active_provider != provider_name:
             self._active_provider = provider_name
             self.active_provider_changed.emit(provider_name)
-            self._logger.info(f"活动provider已更改为: {provider_name}")
+            self._logger.info(f"Active Provider has been changed to: {provider_name}")
 
 
 class ConfigurationService(IConfigurationService):
