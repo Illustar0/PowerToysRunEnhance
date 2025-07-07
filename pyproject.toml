@@ -8,6 +8,7 @@ dependencies = [
     "dependency-injector>=4.47.1",
     "httpx>=0.28.1",
     "loguru>=0.7.3",
+    "psutil>=7.0.0",
     "pydantic>=2.11.5",
     "pynput>=1.8.1",
     "pyside6>=6.9.0",

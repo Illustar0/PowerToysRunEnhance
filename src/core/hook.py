@@ -19,7 +19,7 @@ from src.core.interfaces import (
 )
 from src.core.model import ProviderStatus, WindowsSearchStatus
 from src.core.models import InputData
-from src.utils import get_process_path
+from src.utils import get_process_path, find_processes_by_name
 
 WINDOWS_SEARCH_PROCESS_NAME: Final[list[str]] = [
     "SearchHost.exe",
@@ -175,8 +175,31 @@ class KeyboardHookWorker(IKeyboardHook):
 
         self.provider_status: ProviderStatus = ProviderStatus.COMPLETED
         self.provider_process_name = None
+
+        # 检查 Provider 进程是否存在
+        self.check_timer = QTimer(self)
+        self.check_timer.setInterval(2000)
+        self.check_timer.timeout.connect(self._update_provider_status)
+        self.check_timer.start()
+        QTimer.singleShot(0, self._update_provider_status)
+
         self.listener = keyboard.Listener(win32_event_filter=self.win32_event_filter)
         self.listener.start()
+
+    def _update_provider_status(self):
+        provider_name = self.provider_registry.get_provider_meta(
+            self.app_config.data.Common.active_provider
+        ).provider_process_name
+
+        if not provider_name:
+            self.provider_running = False
+            return
+
+        if find_processes_by_name(provider_name):
+            self.provider_running = True
+        else:
+            self.provider_running = False
+            logger.warning("Provider process not found by periodic check.")
 
     def set_provider_process_name(self, process_name):
         self.provider_process_name = process_name
@@ -184,6 +207,12 @@ class KeyboardHookWorker(IKeyboardHook):
     def win32_event_filter(self, msg, data):
         if not self.enable or not self.listening:
             return
+
+        if not self.provider_running:
+            logger.error("Provider process not found.")
+            self.stop_listening()
+            return
+
         logger.debug(f"pynput 捕获到按键 {data.vkCode},flags={data.flags},msg={msg}")
         if (
             data.vkCode

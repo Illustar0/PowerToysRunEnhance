@@ -1,6 +1,7 @@
 import ctypes
 import winreg
 
+import psutil
 import win32api
 import win32con
 import win32process
@@ -80,3 +81,19 @@ def get_app_current_theme():
         return "light"
     else:
         return "dark"
+
+
+def find_processes_by_name(target_names: list | set) -> bool:
+    """
+    查找进程
+    """
+    target_set = set(target_names)
+
+    for process in psutil.process_iter(["name"]):
+        try:
+            process_name = process.info["name"]
+            if process_name in target_set:
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return False
