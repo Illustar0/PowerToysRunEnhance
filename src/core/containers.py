@@ -12,13 +12,13 @@ from src.core.provider_manager import ProviderManager, ProviderRegistry, Provide
 from src.core.wiring import wire
 from src.ui.main import MainWindow
 from src.ui.tray_icon import TrayIcon
-from src.utils import AggressiveDialog
+from src.utils import AggressiveDialog, get_base_path
 
 
 class MainContainer(containers.DeclarativeContainer):
     app_config = providers.Singleton(
         ConfigurationService,
-        config_path="./config.toml",
+        config_path=str(get_base_path() / "config.toml"),
     )
     app_model = providers.Singleton(ApplicationModel, config_service=app_config)
 
