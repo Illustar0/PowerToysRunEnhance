@@ -1,6 +1,6 @@
 from PySide6.QtCore import QThread, Qt
 from loguru import logger
-from qfluentwidgets import setTheme
+from qfluentwidgets import setTheme, setThemeColor
 
 from src.core.interfaces import (
     IConfigurationService,
@@ -66,6 +66,7 @@ def wire(
     # NativeEventFilter
     native_event_filter.themeChanged.connect(setTheme)
     native_event_filter.themeChanged.connect(tray_icon_presenter.on_theme_changed)
+    native_event_filter.themeColorChanged.connect(setThemeColor)
 
     # 线程启动连接
     window_hook_thread.started.connect(window_hook.set_hook)

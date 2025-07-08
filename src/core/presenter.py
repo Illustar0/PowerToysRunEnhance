@@ -1,9 +1,12 @@
 import ctypes.wintypes
+import sys
 
 import win32con
 from PySide6.QtCore import Signal, Slot, QObject, QAbstractNativeEventFilter
+from PySide6.QtGui import QColor
 from loguru import logger
 from qfluentwidgets import Theme, qconfig
+from qframelesswindow.utils import getSystemAccentColor
 
 from src.core.interfaces import (
     ITrayIconPresenter,
@@ -24,6 +27,7 @@ class NativeEventFilter(QAbstractNativeEventFilter, QObject):
     """原生事件过滤"""
 
     themeChanged = Signal(Theme)
+    themeColorChanged = Signal(QColor)
 
     def __init__(self):
         QObject.__init__(self)
@@ -42,7 +46,9 @@ class NativeEventFilter(QAbstractNativeEventFilter, QObject):
                         f"System theme has changed, switch Qt theme to {system_app_current_theme}"
                     )
                     self.themeChanged.emit(system_app_current_theme)
-                    return True
+                if sys.platform in ["win32", "darwin"]:
+                    if getSystemAccentColor().name() != qconfig.themeColor:
+                        self.themeColorChanged.emit(getSystemAccentColor())
             return True
         return False
 

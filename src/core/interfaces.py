@@ -3,6 +3,7 @@ from collections import deque
 from typing import Protocol, Optional, Any
 
 from PySide6.QtCore import QObject, Signal, QAbstractNativeEventFilter
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QWidget, QSystemTrayIcon, QApplication
 from qfluentwidgets import FluentWindow, Theme
 
@@ -65,6 +66,7 @@ class INativeEventFilter(
     QAbstractNativeEventFilter, QObject, ABC, metaclass=NativeEventFilterABCMeta
 ):
     themeChanged = Signal(Theme)
+    themeColorChanged = Signal(QColor)
 
 
 class IProviderSettingGUI(QWidget, ABC, metaclass=QWidgetABCMeta):

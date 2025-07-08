@@ -1,12 +1,17 @@
 import sys
 
-from qfluentwidgets import setTheme, Theme
+from qfluentwidgets import setTheme, Theme, setThemeColor
+from qframelesswindow.utils import getSystemAccentColor
 
 from src.core.containers import MainContainer
 
 if __name__ == "__main__":
     # 在容器初始化前就设置主题
     setTheme(Theme.AUTO)
+
+    # 设置主题色
+    if sys.platform in ["win32", "darwin"]:
+        setThemeColor(getSystemAccentColor())
 
     container = MainContainer()
     container.wire(modules=[__name__])
