@@ -4,18 +4,15 @@ from typing import Optional
 
 import pywinauto
 import win32con
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QCoreApplication
 from loguru import logger
 from pydantic import BaseModel, Field
 from pynput.keyboard import Controller, Key, KeyCode
 from pywinauto import Application
-from .base import IProvider, IProviderContext, ProviderMeta
+from qfluentwidgets import FluentIcon
 
-__meta__ = ProviderMeta(
-    provider_name="PowerToys Run",
-    provider_process_name=["PowerToys.PowerLauncher.exe"],
-    required_config="PowerToysRun",
-)
+from .base import DoubleSpinCard, ShortcutCard, SettingCardGroup, FluentIconExpand
+from .base import IProvider, IProviderContext, ProviderMeta
 
 
 class PowerToysRunConfig(BaseModel):
@@ -23,6 +20,41 @@ class PowerToysRunConfig(BaseModel):
     """CommandPalette 快捷键"""
     input_speed_factor: float = Field(0.3, description="模拟输入速率因子")
     """模拟输入速率因子"""
+
+
+class PowerToysRunSettingGroup(SettingCardGroup):
+    def __init__(self, title, parent=None):
+        super().__init__(title, parent)
+
+        def validate(value: str) -> bool:
+            if value.split("+")[0] not in ["Shift", "Ctrl", "Win", "Alt"]:
+                return False
+            return True
+
+        self.shortcutCard = ShortcutCard(
+            FluentIconExpand.KEYBOARD,
+            self.tr("PowerToysRun Shortcut"),
+            self.tr("Custom PowerToys Run shortcut keys"),
+            self.tr("PowerToysRun Shortcut"),
+            self.tr("Press the key combination to change this shortcut."),
+            self.tr(
+                "Only shortcut keys starting with <b>Windows key</b>, <b>Ctrl</b>, <b>Alt</b>, or <b>Shift</b> are valid."
+            ),
+            validate_func=validate,
+            config_path="Providers.PowerToysRun.shortcut",
+            parent=self,
+        )
+        self.inputSpeedFactorCard = DoubleSpinCard(
+            FluentIcon.EDIT,
+            self.tr("Replay Rate Factor"),
+            self.tr("Custom replay rate. 0-1"),
+            self.tr("Providers.PowerToysRun.input_speed_factor"),
+            self,
+        )
+        self.inputSpeedFactorCard.setRange(0, 1)
+
+        self.addSettingCard(self.shortcutCard)
+        self.addSettingCard(self.inputSpeedFactorCard)
 
 
 class PowerToysRun(IProvider):
@@ -157,3 +189,13 @@ class PowerToysRun(IProvider):
 
     def cleanup(self) -> None:
         pass
+
+
+__meta__ = ProviderMeta(
+    provider_name="PowerToys Run",
+    provider_name_tr=QCoreApplication.translate("Provider PowerToys Run","PowerToys Run"),
+    provider_process_name=["PowerToys.PowerLauncher.exe"],
+    required_config="PowerToysRun",
+    config_model=PowerToysRunConfig,
+    setting_group=PowerToysRunSettingGroup,
+)

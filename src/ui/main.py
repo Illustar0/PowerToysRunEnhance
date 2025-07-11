@@ -1,4 +1,4 @@
-from PySide6.QtCore import QTimer, Signal
+from PySide6.QtCore import QTimer, Signal, QSize
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QSystemTrayIcon
 from qfluentwidgets import (
@@ -9,7 +9,6 @@ from qfluentwidgets import (
 )
 
 from src.core.interfaces import IMainWindow
-from src.ui.interfaces.main import MainInterface
 from src.utils import get_base_path
 
 
@@ -18,37 +17,9 @@ class MainWindow(IMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-
+        self.setMinimumWidth(650)
         self.setWindowTitle("WindowsSearchUtility")
         self.setWindowIcon(QIcon(str(get_base_path() / "resources" / "logo.png")))
-
-        # 注册子界面
-        self.main_interface = MainInterface("Main", version="1.0")
-        self.main_interface.enable_changed.connect(self.enable_changed.emit)
-
-        self.setting_interface = MainInterface("Main", version="1.0")
-
-        self.init_navigation()
-
-    def init_navigation(self):
-        self.addSubInterface(self.main_interface, FluentIcon.HOME, "Home")
-        self.navigationInterface.addSeparator()
-        self.navigationInterface.addWidget(
-            routeKey="Avatar",
-            widget=NavigationAvatarWidget(
-                "Illustar0", str(get_base_path() / "resources" / "Avatar.png")
-            ),
-            position=NavigationItemPosition.BOTTOM,
-        )
-        self.addSubInterface(
-            self.setting_interface,
-            FluentIcon.SETTING,
-            "Settings",
-            NavigationItemPosition.BOTTOM,
-        )
-
-    def set_enabled(self, enabled: bool):
-        self.main_interface.enableCard.set_enabled(enabled)
 
     def _onThemeChangedFinished(self):
         super()._onThemeChangedFinished()
@@ -60,14 +31,7 @@ class MainWindow(IMainWindow):
                 lambda: self.windowEffect.setMicaEffect(self.winId(), isDarkTheme()),
             )
 
-    def on_tray_icon_activated(self, reason: QSystemTrayIcon.ActivationReason):
-        """
-        处理托盘图标的激活事件
-        """
-        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
-            self.show()
-
-    def show(self):
+    def show_(self):
         self.showNormal()
         self.activateWindow()
 

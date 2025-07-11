@@ -1,9 +1,17 @@
 import sys
 
-from qfluentwidgets import setTheme, Theme, setThemeColor
+from qfluentwidgets import (
+    setTheme,
+    Theme,
+    setThemeColor,
+    FluentIcon,
+    NavigationAvatarWidget,
+    NavigationItemPosition,
+)
 from qframelesswindow.utils import getSystemAccentColor
 
 from src.core.containers import MainContainer
+from src.utils import get_base_path
 
 if __name__ == "__main__":
     # 在容器初始化前就设置主题
@@ -17,22 +25,49 @@ if __name__ == "__main__":
     container.wire(modules=[__name__])
 
     app = container.qt_application()
+    app_model = container.app_model()
+    provider_registry = container.provider_registry()
     if app.is_running:
         sys.exit(0)
-    container.wiring()
 
     native_event_filter = container.native_event_filter()
     tray_icon = container.tray_icon()
+    main_interface = container.main_interface()
+    main_interface.init_ui(app_model.get_version())
+
+    setting_interface = container.setting_interface()
+    provider_setting_card_groups_dict = {}
+    for _, meta in provider_registry.get_provider_metas().items():
+        provider_setting_card_groups_dict.update(
+            {meta.provider_name_tr: meta.setting_group}
+        )
+    setting_interface.init_ui(provider_setting_card_groups_dict)
     main_window = container.main_window()
+
+    container.wiring()
+
+    # 主窗口
+    main_window.addSubInterface(main_interface, FluentIcon.HOME, "Home")
+    main_window.navigationInterface.addSeparator()
+    main_window.navigationInterface.addWidget(
+        routeKey="Avatar",
+        widget=NavigationAvatarWidget(
+            "Illustar0", str(get_base_path() / "resources" / "Avatar.png")
+        ),
+        position=NavigationItemPosition.BOTTOM,
+    )
+    main_window.addSubInterface(
+        setting_interface,
+        FluentIcon.SETTING,
+        "Settings",
+        NavigationItemPosition.BOTTOM,
+    )
 
     app_config = container.app_config()
 
     app.installNativeEventFilter(native_event_filter)
 
     window_hook = container.window_hook()
-    window_hook.set_provider_process_names_by_provider_name(
-        app_config.data.Common.active_provider
-    )
 
     container.window_hook_thread().start()
     container.keyboard_hook_thread().start()

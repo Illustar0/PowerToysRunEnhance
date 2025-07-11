@@ -7,21 +7,23 @@ from src.core.app import WSUApplication
 from src.core.hook import WindowHookWorker, KeyboardHookWorker
 from src.core.model import ApplicationModel, ConfigurationService
 from src.core.models import ProviderContext
-from src.core.presenter import TrayIconPresenter, NativeEventFilter, MainWindowPresenter
+from src.core.presenter import (
+    TrayIconPresenter,
+    NativeEventFilter,
+    MainWindowPresenter,
+    MainInterfacePresenter,
+    SettingInterfacePresenter,
+)
 from src.core.provider_manager import ProviderManager, ProviderRegistry, ProviderFactory
 from src.core.wiring import wire
+from src.ui.interfaces.main import MainInterface
+from src.ui.interfaces.setting import SettingInterface
 from src.ui.main import MainWindow
 from src.ui.tray_icon import TrayIcon
 from src.utils import AggressiveDialog, get_base_path
 
 
 class MainContainer(containers.DeclarativeContainer):
-    app_config = providers.Singleton(
-        ConfigurationService,
-        config_path=str(get_base_path() / "config.toml"),
-    )
-    app_model = providers.Singleton(ApplicationModel, config_service=app_config)
-
     provider_context = providers.Singleton(ProviderContext)
     provider_registry = providers.Singleton(
         ProviderRegistry,
@@ -33,15 +35,33 @@ class MainContainer(containers.DeclarativeContainer):
         ProviderManager, registry=provider_registry, factory=provider_factory
     )
 
+    app_config = providers.Singleton(
+        ConfigurationService,
+        config_path=str(get_base_path() / "config.toml"),
+        provider_registry=provider_registry,
+    )
+    app_model = providers.Singleton(ApplicationModel, config_service=app_config)
+
     # UI
     tray_icon = providers.Singleton(TrayIcon)
     main_window = providers.Singleton(MainWindow)
+    main_interface = providers.Singleton(
+        MainInterface,
+        title="Home",
+        parent=main_window,
+    )
+    setting_interface = providers.Singleton(
+        SettingInterface,
+        title="Setting",
+        parent=main_window,
+    )
 
     # Worker
     window_hook = providers.Singleton(
         WindowHookWorker,
         provider_manager=provider_manager,
         provider_registry=provider_registry,
+        config_service=app_config,
     )
     keyboard_hook = providers.Singleton(
         KeyboardHookWorker,
@@ -59,6 +79,17 @@ class MainContainer(containers.DeclarativeContainer):
     )
     main_window_presenter = providers.Singleton(
         MainWindowPresenter, application_model=app_model, main_window=main_window
+    )
+    main_interface_presenter = providers.Singleton(
+        MainInterfacePresenter,
+        main_interface=main_interface,
+        application_model=app_model,
+    )
+    setting_interface_presenter = providers.Singleton(
+        SettingInterfacePresenter,
+        setting_interface=setting_interface,
+        config_service=app_config,
+        provider_registry=provider_registry,
     )
 
     # Thread
@@ -85,6 +116,8 @@ class MainContainer(containers.DeclarativeContainer):
         keyboard_hook=keyboard_hook,
         provider_manager=provider_manager,
         tray_icon_presenter=tray_icon_presenter,
+        main_interface_presenter=main_interface_presenter,
+        setting_interface_presenter=setting_interface_presenter,
         main_window_presenter=main_window_presenter,
         native_event_filter=native_event_filter,
         window_hook_thread=window_hook_thread,

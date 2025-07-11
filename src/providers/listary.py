@@ -4,18 +4,15 @@ from typing import Optional
 
 import pywinauto
 import win32con
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QCoreApplication
 from loguru import logger
 from pydantic import BaseModel, Field
 from pynput.keyboard import Controller, Key, KeyCode
 from pywinauto import Application
-from .base import IProvider, IProviderContext, ProviderMeta
+from qfluentwidgets import FluentIcon
 
-__meta__ = ProviderMeta(
-    provider_name="Listary",
-    provider_process_name=["Listary.exe"],
-    required_config="Listary",
-)
+from .base import DoubleSpinCard, ShortcutCard, SettingCardGroup, FluentIconExpand
+from .base import IProvider, IProviderContext, ProviderMeta
 
 
 class ListaryConfig(BaseModel):
@@ -25,6 +22,51 @@ class ListaryConfig(BaseModel):
     """模拟输入速率因子"""
     setting_delay: float = Field(0.1, description="稳定延迟")
     """稳定延迟"""
+
+
+class ListarySettingGroup(SettingCardGroup):
+    def __init__(self, title, parent=None):
+        super().__init__(title, parent)
+
+        def validate(value: str) -> bool:
+            if value.split("+")[0] not in ["Shift", "Ctrl", "Win", "Alt"]:
+                return False
+            return True
+
+        self.shortcutCard = ShortcutCard(
+            FluentIconExpand.KEYBOARD,
+            self.tr("Listary Shortcut"),
+            self.tr("Custom Listary shortcut keys"),
+            self.tr("Listary Shortcut"),
+            self.tr("Press the key combination to change this shortcut."),
+            self.tr(
+                "Only shortcut keys starting with <b>Windows key</b>, <b>Ctrl</b>, <b>Alt</b>, or <b>Shift</b> are valid."
+            ),
+            validate_func=validate,
+            config_path="Providers.Listary.shortcut",
+            parent=self,
+        )
+        self.inputSpeedFactorCard = DoubleSpinCard(
+            FluentIcon.EDIT,
+            self.tr("Replay Rate Factor"),
+            self.tr("Custom replay rate. 0-1"),
+            self.tr("Providers.Listary.input_speed_factor"),
+            self,
+        )
+        self.inputSpeedFactorCard.setRange(0, 1)
+
+        self.settingDelayCard = DoubleSpinCard(
+            FluentIcon.EDIT,
+            self.tr("Setting Delay"),
+            self.tr("Waiting for Listary to stabilize"),
+            self.tr("Providers.Listary.setting_delay"),
+            self,
+        )
+        self.inputSpeedFactorCard.setRange(0, 1)
+
+        self.addSettingCard(self.shortcutCard)
+        self.addSettingCard(self.inputSpeedFactorCard)
+        self.addSettingCard(self.settingDelayCard)
 
 
 class Listary(IProvider):
@@ -105,7 +147,6 @@ class Listary(IProvider):
             query_box.wait("ready", timeout=3)
 
             # 等待狗屎 Listary 初始化完成
-            print(self.config.setting_delay)
             time.sleep(self.config.setting_delay)
         except Exception as e:
             logger.error(f"Waiting for Provider to be ready failed: {e}")
@@ -165,3 +206,13 @@ class Listary(IProvider):
 
     def cleanup(self) -> None:
         pass
+
+
+__meta__ = ProviderMeta(
+    provider_name="Listary",
+    provider_name_tr=QCoreApplication.translate("Provider Listary","Listary"),
+    provider_process_name=["Listary.exe"],
+    required_config="Listary",
+    config_model=ListaryConfig,
+    setting_group=ListarySettingGroup,
+)

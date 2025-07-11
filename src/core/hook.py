@@ -37,6 +37,7 @@ class WindowHookWorker(IWindowHook):
         self,
         provider_manager: IProviderManager,
         provider_registry: IProviderRegistry,
+        config_service: IConfigurationService,
     ):
         super().__init__()
         self.callback: type[ctypes._FuncPointer] | None = None
@@ -45,7 +46,7 @@ class WindowHookWorker(IWindowHook):
         self.thread_id: int | None = None
         self.provider_manager: IProviderManager = provider_manager
         self.provider_registry: IProviderRegistry = provider_registry
-        self.provider_process_name: list[str] | None = None
+        self.config_service: IConfigurationService = config_service
         self.previous_foreground_window_name: str | None = None
 
     @Slot(bool)
@@ -56,10 +57,9 @@ class WindowHookWorker(IWindowHook):
     def touch_enable(self):
         self.enable = not self.enable
 
-    @Slot(str)
-    def set_provider_process_names_by_provider_name(self, process_name: str):
-        self.provider_process_name = self.provider_registry.get_provider_meta(
-            process_name
+    def _get_active_provider_process_names(self) -> list[str]:
+        return self.provider_registry.get_provider_meta(
+            self.config_service.data.Common.active_provider
         ).provider_process_name
 
     # 定义回调函数
@@ -88,7 +88,7 @@ class WindowHookWorker(IWindowHook):
             elif process_name in WINDOWS_SEARCH_PROCESS_NAME:
                 self.windowsSearchStarted.emit(hwnd)
 
-            elif process_name in self.provider_process_name:
+            elif process_name in self._get_active_provider_process_names():
                 self.providerStarted.emit(hwnd)
 
             self.previous_foreground_window_name = process_name
@@ -143,7 +143,7 @@ class WindowHookWorker(IWindowHook):
         user32 = ctypes.windll.user32
         if self.thread_id:
             logger.info(f"Posting WM_QUIT to thread ID: {self.thread_id}")
-            # 关键点3: 使用PostThreadMessageW发送WM_QUIT消息
+
             user32.PostThreadMessageW(self.thread_id, win32con.WM_QUIT, 0, 0)
             self.thread_id = None
         else:
@@ -248,21 +248,11 @@ class KeyboardHookWorker(IKeyboardHook):
             if self.provider_status is ProviderStatus.COMPLETED:
                 logger.debug("尝试构建")
                 self.provider_context.common_config = self.app_config.data.Common
-                self.provider_context.provider_config = (
-                    self.app_config.data.Providers.get(
-                        self.provider_registry.get_provider_meta(
-                            self.app_config.data.Common.active_provider
-                        ).required_config
-                    )
+                self.provider_context.provider_config = self.app_config.get(
+                    f"Providers.{self.provider_registry.get_provider_meta(self.app_config.data.Common.active_provider).required_config}"
                 )
-                logger.info(self.app_config.data.Providers)
-                logger.info(
-                    self.app_config.data.Providers.get(
-                        self.provider_registry.get_provider_meta(
-                            self.app_config.data.Common.active_provider
-                        ).required_config
-                    )
-                )
+                logger.info(self.provider_context.provider_config)
+
                 self.provider_context.user_input = deque()
 
             # 检查 CapsLock 按键情况

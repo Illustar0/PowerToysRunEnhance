@@ -13,7 +13,6 @@ from loguru import logger
 
 from src.core.interfaces import (
     IProvider,
-    IProviderSettingGUI,
     IProviderRegistry,
     IProviderMeta,
     IProviderFactory,
@@ -21,6 +20,7 @@ from src.core.interfaces import (
     IProviderManager,
 )
 from src.core.models import ProviderMeta
+from src.ui.interfaces.component import SettingCardGroup
 from src.utils import get_base_path
 
 
@@ -40,7 +40,7 @@ class ProviderRegistry(IProviderRegistry):
     def __init__(self):
         self.providers: Dict[str, Type[IProvider]] = {}
         self.provider_metas: Dict[str, IProviderMeta] = {}
-        self.providers_guis: Dict[str, Type[IProviderSettingGUI]] = {}
+        self.providers_setting_groups: Dict[str, Type[SettingCardGroup]] = {}
         self._load_providers()
 
     def register_provider(
@@ -48,11 +48,9 @@ class ProviderRegistry(IProviderRegistry):
         provider_name: str,
         provider_meta: IProviderMeta,
         provider_class: type[IProvider],
-        provider_setting_gui_class: type[IProviderSettingGUI] | None = None,
     ) -> None:
         self.providers[provider_name] = provider_class
         self.provider_metas[provider_name] = provider_meta
-        self.providers_guis[provider_name] = provider_setting_gui_class
 
     def _load_providers(self):
         """加载 current_provider / 所有 provider"""
@@ -74,29 +72,17 @@ class ProviderRegistry(IProviderRegistry):
                 if meta and isinstance(meta, ProviderMeta):
                     # 查找 Provider 类
                     provider_class = None
-                    provider_gui_class = None
                     for _, obj in inspect.getmembers(module):
                         if (
                             inspect.isclass(obj)
-                            and issubclass(obj, IProvider)
+                            and IProvider in obj.__bases__
                             and obj is not IProvider
+                            and obj.__module__ == module_name
                         ):
                             provider_class = obj
-                        if (
-                            inspect.isclass(obj)
-                            and issubclass(obj, IProviderSettingGUI)
-                            and obj is not IProviderSettingGUI
-                        ):
-                            provider_gui_class = obj
-                        if (
-                            provider_class is not None
-                            and provider_gui_class is not None
-                        ):
                             break
                     if provider_class:
-                        self.register_provider(
-                            meta.provider_name, meta, provider_class, provider_gui_class
-                        )
+                        self.register_provider(meta.provider_name, meta, provider_class)
                         logger.success(
                             f"Successfully loaded provider: {meta.provider_name}"
                         )
@@ -106,21 +92,21 @@ class ProviderRegistry(IProviderRegistry):
                         )
             except Exception as e:
                 logger.error(f"Failed to load provider file: {file.stem} - {str(e)}")
-                # 继续加载其他provider，不要因为一个失败就停止
                 continue
-
-    def get_provider_setting_gui_class(
-        self, provider_name: str
-    ) -> Optional[type[IProviderSettingGUI]]:
-        return self.providers_guis.get(provider_name)
 
     def get_provider_class(self, provider_name: str) -> Optional[type[IProvider]]:
         return self.providers.get(provider_name)
 
+    def get_provider_classes(self) -> dict[str, type[IProvider]]:
+        return self.providers
+
     def get_provider_meta(self, provider_name: str) -> Optional[IProviderMeta]:
         return self.provider_metas.get(provider_name)
 
-    def get_all_provider_names(self) -> List[str]:
+    def get_provider_metas(self) -> dict[str, IProviderMeta]:
+        return self.provider_metas
+
+    def get_provider_names(self) -> List[str]:
         return list(self.providers.keys())
 
 

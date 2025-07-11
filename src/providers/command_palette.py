@@ -2,21 +2,17 @@ import ctypes
 import time
 from typing import Optional
 
-
+import pywinauto
 import win32con
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QCoreApplication
 from loguru import logger
 from pydantic import BaseModel, Field
 from pynput.keyboard import Controller, Key, KeyCode
-import pywinauto
 from pywinauto import Application
-from .base import IProvider, IProviderContext, ProviderMeta
+from qfluentwidgets import FluentIcon
 
-__meta__ = ProviderMeta(
-    provider_name="Command Palette",
-    provider_process_name=["Microsoft.CmdPal.UI.exe"],
-    required_config="CommandPalette",
-)
+from .base import IProvider, IProviderContext, ProviderMeta, SettingCardGroup
+from .base import ShortcutCard, FluentIconExpand, DoubleSpinCard
 
 
 class CommandPaletteConfig(BaseModel):
@@ -24,6 +20,41 @@ class CommandPaletteConfig(BaseModel):
     """CommandPalette 快捷键"""
     input_speed_factor: float = Field(0.3, description="模拟输入速率因子")
     """模拟输入速率因子"""
+
+
+class CommandPaletteSettingGroup(SettingCardGroup):
+    def __init__(self, title, parent=None):
+        super().__init__(title, parent)
+
+        def validate(value: str) -> bool:
+            if value.split("+")[0] not in ["Shift", "Ctrl", "Win", "Alt"]:
+                return False
+            return True
+
+        self.shortcutCard = ShortcutCard(
+            FluentIconExpand.KEYBOARD,
+            self.tr("Command Palette Shortcut"),
+            self.tr("Custom CommandPalette shortcut keys"),
+            self.tr("Command Palette Shortcut"),
+            self.tr("Press the key combination to change this shortcut."),
+            self.tr(
+                "Only shortcut keys starting with <b>Windows key</b>, <b>Ctrl</b>, <b>Alt</b>, or <b>Shift</b> are valid."
+            ),
+            validate_func=validate,
+            config_path="Providers.CommandPalette.shortcut",
+            parent=self,
+        )
+        self.inputSpeedFactorCard = DoubleSpinCard(
+            FluentIcon.EDIT,
+            self.tr("Replay Rate Factor"),
+            self.tr("Custom replay rate. 0-1"),
+            self.tr("Providers.CommandPalette.input_speed_factor"),
+            self,
+        )
+        self.inputSpeedFactorCard.setRange(0, 1)
+
+        self.addSettingCard(self.shortcutCard)
+        self.addSettingCard(self.inputSpeedFactorCard)
 
 
 class CommandPalette(IProvider):
@@ -157,3 +188,15 @@ class CommandPalette(IProvider):
 
     def cleanup(self) -> None:
         pass
+
+
+__meta__ = ProviderMeta(
+    provider_name="Command Palette",
+    provider_name_tr=QCoreApplication.translate(
+        "Provider Command Palette", "Command Palette"
+    ),
+    provider_process_name=["Microsoft.CmdPal.UI.exe"],
+    required_config="CommandPalette",
+    config_model=CommandPaletteConfig,
+    setting_group=CommandPaletteSettingGroup,
+)

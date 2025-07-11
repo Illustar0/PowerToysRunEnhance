@@ -1,48 +1,104 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QStackedWidget, QLabel
-from qfluentwidgets import SegmentedWidget, PushButton
+from PySide6.QtWidgets import QWidget, QVBoxLayout
+from qfluentwidgets import (
+    FluentIcon,
+    SingleDirectionScrollArea,
+)
+
+from src.core.interfaces import ISettingInterface
+from src.ui.interfaces.component import (
+    SettingCardGroup,
+    SwitchCard,
+    ComboBoxCard,
+)
 
 
-class SettingInterface(QWidget):
-    def __init__(self, title: str, parent=None):
+class SettingInterface(ISettingInterface):
+    def __init__(
+        self,
+        title: str,
+        parent=None,
+    ):
         super().__init__(parent)
         self.setObjectName(title.replace(" ", "-"))
 
-        self.pivot = SegmentedWidget(self)
-        self.stackedWidget = QStackedWidget(self)
-        self.vBoxLayout = QVBoxLayout(self)
-        self.MainSettingUI = SettingUI(self)
-        # 获取Provider的SettingUI
-        # self.ProviderSettingUI=
-        self.addSubInterface(self.MainSettingUI, "Main_Setting_UI", "Main")
-        # self.addSubInterface(self.ProviderSettingUI, "Provider_Setting_UI", "Provider")
+        # 主布局
+        self._vBoxLayout = QVBoxLayout(self)
+        self._vBoxLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.stackedWidget.currentChanged.connect(self.onCurrentIndexChanged)
-        self.stackedWidget.setCurrentWidget(self.MainSettingUI)
-        self.pivot.setCurrentItem(self.MainSettingUI.objectName())
+        self.view = QWidget()
 
-        self.vBoxLayout.setContentsMargins(30, 0, 30, 30)
-        self.vBoxLayout.addWidget(self.pivot, 0, Qt.AlignmentFlag.AlignHCenter)
-        self.vBoxLayout.addWidget(self.stackedWidget)
+        self.scrollArea = SingleDirectionScrollArea(orient=Qt.Orientation.Vertical)
+        self.scrollArea.setWidget(self.view)
+        self.scrollArea.enableTransparentBackground()
 
-    def addSubInterface(self, widget: QWidget, objectName: str, text: str):
-        widget.setObjectName(objectName)
-        self.stackedWidget.addWidget(widget)
-
-        # 使用全局唯一的 objectName 作为路由键
-        self.pivot.addItem(
-            routeKey=objectName,
-            text=text,
-            onClick=lambda: self.stackedWidget.setCurrentWidget(widget),
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scrollArea.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
 
-    def onCurrentIndexChanged(self, index):
-        widget = self.stackedWidget.widget(index)
-        self.pivot.setCurrentItem(widget.objectName())
+        self._vBoxLayout.addWidget(self.scrollArea)
 
+        self.vBoxLayout = QVBoxLayout(self.view)
+        self.vBoxLayout.setContentsMargins(36, 20, 36, 20)
+        self.vBoxLayout.setSpacing(10)
+        self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-class SettingUI(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.vBoxLayout = QVBoxLayout(self)
-        self.vBoxLayout.addWidget(PushButton(parent=self))
+        self._settingCardGroups = []
+
+    def init_ui(
+        self, provider_setting_card_groups_dict: dict[str, type[SettingCardGroup]]
+    ):
+        # Common Settings Group
+        commonGroup = SettingCardGroup(self.tr("Common"), self)
+
+        autoFocusCard = SwitchCard(
+            FluentIcon.PIN,
+            self.tr("Auto focus"),
+            self.tr(
+                "Automatically focuses the Provider window."
+            ),
+            "Common.auto_focus",
+            commonGroup,
+        )
+
+        activeProviderCard = ComboBoxCard(
+            FluentIcon.APPLICATION,
+            self.tr("Active provider"),
+            self.tr("The currently active search provider"),
+            "Common.active_provider",
+            commonGroup,
+        )
+
+        languageCard = ComboBoxCard(
+            FluentIcon.LANGUAGE,
+            self.tr("Language"),
+            self.tr("Application display language"),
+            "Common.language",
+            commonGroup,
+        )
+
+        commonGroup.addSettingCards([autoFocusCard, activeProviderCard])
+        # commonGroup.addSettingCards([autoFocusCard, activeProviderCard, languageCard])
+        self._settingCardGroups.append(commonGroup)
+
+        # Add provider setting card groups
+        for (
+            provider_name_tr,
+            provider_group,
+        ) in provider_setting_card_groups_dict.items():
+            if provider_group is not None:
+                self._settingCardGroups.append(provider_group(provider_name_tr))
+
+        # Add all groups to layout
+        for group in self._settingCardGroups:
+            self.vBoxLayout.addWidget(group)
+
+        # 添加弹簧，顶端对其
+        self.vBoxLayout.addStretch(1)
+
+        self.view.setMinimumWidth(300)
+
+    def listSettingCardGroups(self):
+        return self._settingCardGroups

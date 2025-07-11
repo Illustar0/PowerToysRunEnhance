@@ -1,9 +1,11 @@
 import ctypes.wintypes
 import sys
+from typing import Any
 
 import win32con
 from PySide6.QtCore import Signal, Slot, QObject, QAbstractNativeEventFilter
 from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QSystemTrayIcon
 from loguru import logger
 from qfluentwidgets import Theme, qconfig
 from qframelesswindow.utils import getSystemAccentColor
@@ -14,6 +16,12 @@ from src.core.interfaces import (
     IApplicationModel,
     IMainWindowPresenter,
     IMainWindow,
+    ISettingInterface,
+    IConfigurationService,
+    ISettingInterfacePresenter,
+    IMainInterface,
+    IMainInterfacePresenter,
+    IProviderRegistry,
 )
 from src.utils import (
     get_app_current_theme,
@@ -88,18 +96,64 @@ class TrayIconPresenter(ITrayIconPresenter):
 
 
 class MainWindowPresenter(IMainWindowPresenter):
-    reset_status = Signal()
-
     def __init__(self, main_window: IMainWindow, application_model: IApplicationModel):
         super().__init__()
         self.main_window = main_window
         self.app = application_model
 
-        self.main_window.enable_changed.connect(self.app.set_enabled)
-
-        self.app.enabled_changed.connect(self.main_window.set_enabled)
-
     @Slot(str)
-    def on_message_received(self, message: str):
+    def onMessageReceived(self, message: str):
         if message == "show":
-            self.main_window.show()
+            self.main_window.show_()
+
+    @Slot(QSystemTrayIcon.ActivationReason)
+    def onTrayIconActivated(self, reason: QSystemTrayIcon.ActivationReason):
+        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
+            self.main_window.show_()
+
+
+class MainInterfacePresenter(IMainInterfacePresenter):
+    def __init__(
+        self, main_interface: IMainInterface, application_model: IApplicationModel
+    ):
+        self.main_interface = main_interface
+        self.app = application_model
+
+        self.main_interface.enableChanged.connect(self.app.set_enabled)
+
+        self.app.enabled_changed.connect(self.main_interface.setEnable)
+
+        self.main_interface.setEnable(self.app.is_enabled())
+
+
+class SettingInterfacePresenter(ISettingInterfacePresenter):
+    def __init__(
+        self,
+        setting_interface: ISettingInterface,
+        config_service: IConfigurationService,
+        provider_registry: IProviderRegistry,
+    ):
+        super().__init__()
+        self.setting_interface = setting_interface
+        self.config_service = config_service
+        self.provider_registry = provider_registry
+        for SettingCardGroup in self.setting_interface.listSettingCardGroups():
+            for SettingCard in SettingCardGroup.listSettingCard():
+                if SettingCard.configPath == "Common.active_provider":
+                    SettingCard.addItems(self.provider_registry.get_provider_names())
+                SettingCard.setValue(self.config_service.get(SettingCard.configPath))
+                SettingCard.valueChanged.connect(self._onSettingCardValueChanged)
+
+    def _onSettingCardValueChanged(self, config_path: str, value: Any):
+        if config_path == "Common.active_provider":
+            self.config_service.set(
+                config_path, self.provider_registry.get_provider_names()[value]
+            )
+            return
+        self.config_service.set(config_path, value)
+
+    @Slot()
+    def onConfigChanged(self):
+        for SettingCardGroup in self.setting_interface.listSettingCardGroups():
+            for SettingCard in SettingCardGroup.listSettingCard():
+                SettingCard.setValue(self.config_service.get(SettingCard.configPath))

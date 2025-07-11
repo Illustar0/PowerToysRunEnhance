@@ -9,13 +9,15 @@ from src.core.interfaces import (
     IKeyboardHook,
     IProviderManager,
     ITrayIconPresenter,
-    IAggressiveDialog,
     IMainWindow,
     INativeEventFilter,
     IQApplication,
     IMainWindowPresenter,
     IApplicationModel,
+    IMainInterfacePresenter,
+    ISettingInterfacePresenter,
 )
+from src.utils import IAggressiveDialog
 
 
 def wire(
@@ -30,6 +32,8 @@ def wire(
     provider_manager: IProviderManager,
     tray_icon_presenter: ITrayIconPresenter,
     main_window_presenter: IMainWindowPresenter,
+    main_interface_presenter: IMainInterfacePresenter,
+    setting_interface_presenter: ISettingInterfacePresenter,
     native_event_filter: INativeEventFilter,
     window_hook_thread: QThread,
     keyboard_hook_thread: QThread,
@@ -59,7 +63,7 @@ def wire(
     # tray_icon connections
     tray_icon.enable_changed.connect(keyboard_hook.set_enabled)
     tray_icon.enable_changed.connect(window_hook.set_enabled)
-    tray_icon.activated.connect(main_window.on_tray_icon_activated)
+    tray_icon.activated.connect(main_window_presenter.onTrayIconActivated)
 
     tray_icon_presenter.reset_status.connect(keyboard_hook.stop_listening)
 
@@ -74,7 +78,10 @@ def wire(
     app_model.enabled_changed.connect(window_hook.set_enabled)
     app_model.enabled_changed.connect(keyboard_hook.set_enabled)
 
-    app.messageReceived.connect(main_window_presenter.on_message_received)
+    app.messageReceived.connect(main_window_presenter.onMessageReceived)
+
+    # 配置
+    app_config.configChanged.connect(setting_interface_presenter.onConfigChanged)
 
     # 应用退出清理
     app.aboutToQuit.connect(window_hook.unset_hook)
