@@ -45,9 +45,9 @@ class PowerToysRunSettingGroup(SettingCardGroup):
             parent=self,
         )
         self.inputSpeedFactorCard = DoubleSpinCard(
-            FluentIcon.EDIT,
+            FluentIcon.UPDATE,
             self.tr("Replay Rate Factor"),
-            self.tr("Custom replay rate. 0-1"),
+            self.tr("Custom replay rate."),
             self.tr("Providers.PowerToysRun.input_speed_factor"),
             self,
         )

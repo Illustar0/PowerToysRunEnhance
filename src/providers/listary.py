@@ -47,16 +47,16 @@ class ListarySettingGroup(SettingCardGroup):
             parent=self,
         )
         self.inputSpeedFactorCard = DoubleSpinCard(
-            FluentIcon.EDIT,
+            FluentIcon.UPDATE,
             self.tr("Replay Rate Factor"),
-            self.tr("Custom replay rate. 0-1"),
+            self.tr("Custom replay rate."),
             self.tr("Providers.Listary.input_speed_factor"),
             self,
         )
         self.inputSpeedFactorCard.setRange(0, 1)
 
         self.settingDelayCard = DoubleSpinCard(
-            FluentIcon.EDIT,
+            FluentIcon.PAUSE,
             self.tr("Setting Delay"),
             self.tr("Waiting for Listary to stabilize"),
             self.tr("Providers.Listary.setting_delay"),
