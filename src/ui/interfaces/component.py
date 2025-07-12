@@ -439,6 +439,52 @@ class PrimaryPushCard(PushCard):
     :type parent: QWidget, optional
     """
 
+    primaryButtonLightQss = """
+        #primaryButton {
+            color: white;
+            background-color: --ThemeColorPrimary;
+            border: 1px solid --ThemeColorLight1;
+            border-bottom: 1px solid --ThemeColorDark1;
+            padding: 5px 12px 5px 12px;
+            outline: none;
+        }
+
+        #primaryButton:hover {
+            background-color: --ThemeColorLight1;
+            border: 1px solid --ThemeColorLight2;
+            border-bottom: 1px solid --ThemeColorDark1;
+        }
+        
+        #primaryButton:pressed {
+            color: rgba(255, 255, 255, 0.63);
+            background-color: --ThemeColorLight3;
+            border: 1px solid --ThemeColorLight3;
+        }
+    """
+
+    primaryButtonDarkQss = """
+        #primaryButton {
+            color: black;
+            background-color: --ThemeColorPrimary;
+            border: 1px solid --ThemeColorLight1;
+            border-bottom: 1px solid --ThemeColorLight2;
+            padding: 5px 12px 5px 12px;
+            outline: none;
+        }
+
+        #primaryButton:hover {
+            background-color: --ThemeColorDark1;
+            border: 1px solid --ThemeColorLight1;
+            border-bottom: 1px solid --ThemeColorLight2;
+        }
+        
+        #primaryButton:pressed {
+            color: rgba(0, 0, 0, 0.63);
+            background-color: --ThemeColorDark2;
+            border: 1px solid --ThemeColorDark2;
+        }
+    """
+
     def __init__(
         self,
         icon: Union[str, QIcon, FluentIconBase],
@@ -449,6 +495,9 @@ class PrimaryPushCard(PushCard):
     ):
         super().__init__(icon, text, title, content, parent)
         self.button.setObjectName("primaryButton")
+        setCustomStyleSheet(
+            self.button, self.primaryButtonLightQss, self.primaryButtonDarkQss
+        )
 
 
 class DoubleSpinCard(SettingCard):
