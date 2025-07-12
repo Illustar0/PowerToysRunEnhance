@@ -69,6 +69,8 @@ class MainInterface(IMainInterface):
             )
         )
 
+        self.vBoxLayout.addStretch(1)
+
         self.mainSettingCardGroup = SettingCardGroup("", self)
 
         self.enableCard = SwitchCard(
