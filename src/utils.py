@@ -2,6 +2,7 @@ import ctypes
 import sys
 import winreg
 from abc import ABC, abstractmethod, ABCMeta
+from os import PathLike
 from pathlib import Path
 
 import psutil
@@ -408,3 +409,25 @@ def vk_code_to_char(
         return buffer.value[:result]
     else:
         return None
+
+
+def register_aumid(aumid: str, app_name: str, icon_path: str | PathLike | Path):
+    if icon_path is not None:
+        icon_path = Path(icon_path)
+        if not icon_path.exists():
+            raise ValueError(
+                f"Could not register the application: File {icon_path} does not exist"
+            )
+        elif icon_path.suffix != ".ico":
+            raise ValueError(
+                f"Could not register the application: File {icon_path} must be of type .ico"
+            )
+
+    winreg.ConnectRegistry(None, winreg.HKEY_CURRENT_USER)
+    keyPath = f"SOFTWARE\\Classes\\AppUserModelId\\{aumid}"
+    with winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, keyPath) as masterKey:
+        winreg.SetValueEx(masterKey, "DisplayName", 0, winreg.REG_SZ, app_name)
+        if icon_path is not None:
+            winreg.SetValueEx(
+                masterKey, "IconUri", 0, winreg.REG_SZ, str(icon_path.resolve())
+            )

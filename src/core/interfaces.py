@@ -868,15 +868,6 @@ class IApplicationModel(QObject, ABC, metaclass=QObjectABCMeta):
         pass
 
     @abstractmethod
-    def get_version(self) -> str:
-        """Get the application version.
-
-        :returns: Version string
-        :rtype: str
-        """
-        pass
-
-    @abstractmethod
     def get_active_provider(self) -> str:
         """Get the active provider name.
 

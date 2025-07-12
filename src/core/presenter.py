@@ -2,14 +2,12 @@ import ctypes.wintypes
 import sys
 from typing import Any
 
-import httpx
 import win32con
 from PySide6.QtCore import (
     Signal,
     Slot,
     QObject,
     QAbstractNativeEventFilter,
-    QThread,
     Qt,
 )
 from PySide6.QtGui import QColor
@@ -31,6 +29,7 @@ from src.core.interfaces import (
     IMainInterfacePresenter,
     IProviderRegistry,
 )
+from src.core.update import UpdateCheckWorker
 from src.utils import (
     get_app_current_theme,
     enable_run_at_startup,
@@ -185,35 +184,6 @@ class SettingInterfacePresenter(ISettingInterfacePresenter):
                         self.config_service.get(SettingCard.configPath)
                     )
 
-    class UpdateCheckWorker(QThread):
-        updateResult = Signal(dict)
-        updateError = Signal(str)
-
-        def __init__(self, current_version: str):
-            super().__init__()
-            self.current_version = current_version
-
-        def run(self):
-            try:
-                response = httpx.get(
-                    "https://api.github.com/repos/Illustar0/WindowsSearchUtility/releases/latest"
-                )
-                response.raise_for_status()
-
-                release_data = response.json()
-                latest_version = release_data["tag_name"].lstrip("v")
-
-                result = {
-                    "latest_version": latest_version,
-                    "current_version": self.current_version,
-                    "has_update": latest_version != self.current_version,
-                    "download_url": release_data.get("html_url", ""),
-                }
-                self.updateResult.emit(result)
-
-            except Exception as e:
-                self.updateError.emit(str(e))
-
     def _onVersionCardClicked(self):
         # 防止重复点击
         if hasattr(self, "update_worker") and self.update_worker.isRunning():
@@ -225,7 +195,7 @@ class SettingInterfacePresenter(ISettingInterfacePresenter):
         current_version = self.setting_ui.versionCard.titleLabel.text().split("v")[1]
 
         # 创建工作线程
-        self.update_worker = self.UpdateCheckWorker(current_version)
+        self.update_worker = UpdateCheckWorker(current_version)
         self.update_worker.updateResult.connect(self._onUpdateCheckFinished)
         self.update_worker.updateError.connect(self._onUpdateCheckError)
         self.update_worker.start()

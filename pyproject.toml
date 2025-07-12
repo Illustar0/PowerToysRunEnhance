@@ -16,11 +16,12 @@ dependencies = [
     "pywin32>=310",
     "pywinauto>=0.6.9",
     "tomlkit>=0.13.2",
+    "windows-toasts>=1.3.1",
 ]
 
 [tool.semantic_release]
 version_variables = [
-    "src/core/model.py:__VERSION__",
+    "src/core/constants.py:VERSION",
     "src/setup.iss:AppVersion",
     ".github/workflows/ci.yaml:NEW_VERSION",
     "scripts/build.ps1:NEW_VERSION"

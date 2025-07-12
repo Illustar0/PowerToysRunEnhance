@@ -15,6 +15,7 @@ from src.core.presenter import (
     SettingInterfacePresenter,
 )
 from src.core.provider_manager import ProviderManager, ProviderRegistry, ProviderFactory
+from src.core.update import VersionUpdateService
 from src.core.wiring import wire
 from src.ui.interfaces.main import MainInterface
 from src.ui.interfaces.setting import SettingInterface
@@ -41,6 +42,7 @@ class MainContainer(containers.DeclarativeContainer):
         provider_registry=provider_registry,
     )
     app_model = providers.Singleton(ApplicationModel, config_service=app_config)
+    version_update_service = providers.Singleton(VersionUpdateService)
 
     # UI
     tray_icon = providers.Singleton(TrayIcon)

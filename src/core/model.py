@@ -18,7 +18,6 @@ from src.core.interfaces import (
 from src.core.models import CommonConfigModel, AppConfigModel
 from src.core.models import InputData
 
-__VERSION__ = "0.1.0"
 DEFAULT_CONFIG: Final[dict] = {
     "Common": {
         "auto_focus": True,
@@ -120,10 +119,8 @@ class ApplicationModel(IApplicationModel):
     def __init__(self, config_service: IConfigurationService, parent=None):
         super().__init__(parent)
         self._config_service = config_service
-        self._logger = logger
         self._enabled = True
         self._active_provider = config_service.data.Common.active_provider
-        self._version = __VERSION__
 
     def is_enabled(self) -> bool:
         """Check if the application is currently enabled.
@@ -147,14 +144,6 @@ class ApplicationModel(IApplicationModel):
             self._logger.info(
                 f"The application enabled status has been changed to: {enabled}"
             )
-
-    def get_version(self) -> str:
-        """Get the application version.
-
-        :return: Application version string
-        :rtype: str
-        """
-        return self._version
 
     def get_active_provider(self) -> str:
         return self._config_service.data.Common.active_provider

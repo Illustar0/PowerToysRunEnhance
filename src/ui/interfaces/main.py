@@ -8,6 +8,7 @@ from qfluentwidgets import (
     AvatarWidget,
 )
 
+from src.core.constants import GITHUB_REPO
 from src.core.interfaces import IMainInterface
 from src.ui.interfaces.component import (
     HyperLinkCard,
@@ -84,7 +85,7 @@ class MainInterface(IMainInterface):
 
         self.githubCard = HyperLinkCard(
             FluentIcon.INFO,
-            "https://github.com/Illustar0/WindowsSearchUtility",
+            f"https://github.com/{GITHUB_REPO}",
             "Github",
             self.tr("About"),
             "Copyright © 2025 Illustar0. All rights reserved.",

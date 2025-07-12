@@ -1,5 +1,7 @@
 import sys
+import threading
 
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QDesktopServices
 from qfluentwidgets import (
     setTheme,
@@ -11,8 +13,9 @@ from qfluentwidgets import (
 )
 from qframelesswindow.utils import getSystemAccentColor
 
+from src.core.constants import VERSION, APP_ID, APP_NAME
 from src.core.containers import MainContainer
-from src.utils import get_base_path
+from src.utils import get_base_path, register_aumid
 
 if __name__ == "__main__":
     # 在容器初始化前就设置主题
@@ -27,6 +30,7 @@ if __name__ == "__main__":
 
     app = container.qt_application()
     app_model = container.app_model()
+    version_update_service = container.version_update_service()
     provider_registry = container.provider_registry()
     if app.is_running:
         sys.exit(0)
@@ -42,9 +46,7 @@ if __name__ == "__main__":
         provider_setting_card_groups_dict.update(
             {meta.provider_name_tr: meta.setting_group}
         )
-    setting_interface.init_ui(
-        provider_setting_card_groups_dict, app_model.get_version()
-    )
+    setting_interface.init_ui(provider_setting_card_groups_dict, VERSION)
     main_window = container.main_window()
 
     container.wiring()
@@ -80,6 +82,9 @@ if __name__ == "__main__":
     container.window_hook_thread().start()
     container.keyboard_hook_thread().start()
     container.provider_manager_thread().start()
+
+    register_aumid(APP_ID, APP_NAME, get_base_path() / "resources" / "logo.ico")
+    QTimer.singleShot(10000, lambda: version_update_service.check_update(VERSION))
 
     tray_icon.show()
     # 默认不显示主界面
