@@ -18,13 +18,13 @@ class ProviderContext:
 
 class ProviderMeta(BaseModel):
     provider_name: str
-    provider_name_tr: str | None =None
+    provider_name_tr: str | None = None
     provider_process_name: List[str]
     required_config: Optional[str]
     config_model: type[BaseModel]
-    setting_group: Optional[type[Any]] = None #
+    setting_group: Optional[type[Any]] = None  #
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def set_default_translation(self):
         if self.provider_name_tr is None:
             self.provider_name_tr = self.provider_name

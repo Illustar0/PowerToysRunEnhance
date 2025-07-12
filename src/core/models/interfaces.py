@@ -17,7 +17,8 @@ from qfluentwidgets import (
     isDarkTheme,
     IconWidget,
     drawIcon,
-    FluentIconBase, setFont,
+    FluentIconBase,
+    setFont,
 )
 
 
@@ -268,6 +269,8 @@ class ISettingCardGroup(QWidget, ABC, metaclass=QWidgetABCMeta):
         :rtype: list[ISettingCard]
         """
         pass
+
+
 class SettingCardGroup(ISettingCardGroup):
     """Setting card group container widget.
 

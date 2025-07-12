@@ -210,7 +210,7 @@ class Listary(IProvider):
 
 __meta__ = ProviderMeta(
     provider_name="Listary",
-    provider_name_tr=QCoreApplication.translate("Provider Listary","Listary"),
+    provider_name_tr=QCoreApplication.translate("Provider Listary", "Listary"),
     provider_process_name=["Listary.exe"],
     required_config="Listary",
     config_model=ListaryConfig,

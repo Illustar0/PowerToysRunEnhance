@@ -137,8 +137,11 @@ class SettingInterfacePresenter(ISettingInterfacePresenter):
         self.setting_interface = setting_interface
         self.config_service = config_service
         self.provider_registry = provider_registry
+        self.settingCardDict = {}
         for SettingCardGroup in self.setting_interface.listSettingCardGroups():
             for SettingCard in SettingCardGroup.listSettingCard():
+                self.settingCardDict.update({SettingCard.configPath: SettingCard})
+
                 if SettingCard.configPath == "Common.active_provider":
                     SettingCard.addItems(self.provider_registry.get_provider_names())
                 SettingCard.setValue(self.config_service.get(SettingCard.configPath))
@@ -153,7 +156,12 @@ class SettingInterfacePresenter(ISettingInterfacePresenter):
         self.config_service.set(config_path, value)
 
     @Slot()
-    def onConfigChanged(self):
-        for SettingCardGroup in self.setting_interface.listSettingCardGroups():
-            for SettingCard in SettingCardGroup.listSettingCard():
-                SettingCard.setValue(self.config_service.get(SettingCard.configPath))
+    def onConfigChanged(self, path: str):
+        if path in self.settingCardDict:
+            self.settingCardDict[path].setValue(self.config_service.get(path))
+        elif path == "All":
+            for SettingCardGroup in self.setting_interface.listSettingCardGroups():
+                for SettingCard in SettingCardGroup.listSettingCard():
+                    SettingCard.setValue(
+                        self.config_service.get(SettingCard.configPath)
+                    )

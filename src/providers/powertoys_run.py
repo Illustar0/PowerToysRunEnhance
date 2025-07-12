@@ -193,7 +193,9 @@ class PowerToysRun(IProvider):
 
 __meta__ = ProviderMeta(
     provider_name="PowerToys Run",
-    provider_name_tr=QCoreApplication.translate("Provider PowerToys Run","PowerToys Run"),
+    provider_name_tr=QCoreApplication.translate(
+        "Provider PowerToys Run", "PowerToys Run"
+    ),
     provider_process_name=["PowerToys.PowerLauncher.exe"],
     required_config="PowerToysRun",
     config_model=PowerToysRunConfig,

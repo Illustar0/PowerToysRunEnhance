@@ -698,7 +698,7 @@ class IConfigurationService(QObject, ABC, metaclass=QObjectABCMeta):
         configChanged: Emitted when configuration changes
     """
 
-    configChanged = Signal()
+    configChanged = Signal(str)
 
     @property
     @abstractmethod
@@ -1004,7 +1004,7 @@ class ISettingInterface(QWidget, ABC, metaclass=QWidgetABCMeta):
 class ISettingInterfacePresenter(QObject, ABC, metaclass=QObjectABCMeta):
     @abstractmethod
     @Slot()
-    def onConfigChanged(self):
+    def onConfigChanged(self, path: str):
         pass
 
 

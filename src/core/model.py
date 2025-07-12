@@ -179,7 +179,7 @@ class ConfigurationService(IConfigurationService):
     :signal configChanged: Emitted when configuration data changes
     """
 
-    configChanged = Signal()
+    configChanged = Signal(str)
 
     def __init__(
         self,
@@ -253,7 +253,7 @@ class ConfigurationService(IConfigurationService):
             validated_value = self.model.model_validate(value.model_dump())
             self._data = validated_value
             self.save()
-            self.configChanged.emit()
+            self.configChanged.emit("All")
 
     def load(self) -> None:
         """Load configuration from file.
@@ -336,7 +336,7 @@ class ConfigurationService(IConfigurationService):
             setattr(current, final_key, value)
             # 触发配置变更事件
             self.save()
-            self.configChanged.emit()
+            self.configChanged.emit(path)
             logger.info(f"Configuration '{path}' set to '{value}'")
         else:
             raise KeyError(f"Configuration path '{path}' not found")

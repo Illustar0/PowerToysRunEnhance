@@ -56,9 +56,7 @@ class SettingInterface(ISettingInterface):
         autoFocusCard = SwitchCard(
             FluentIcon.PIN,
             self.tr("Auto focus"),
-            self.tr(
-                "Automatically focuses the Provider window."
-            ),
+            self.tr("Automatically focuses the Provider window."),
             "Common.auto_focus",
             commonGroup,
         )
