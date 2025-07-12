@@ -429,8 +429,6 @@ class IProviderRegistry(ABC):
         :type provider_meta: IProviderMeta
         :param provider_class: Provider implementation class
         :type provider_class: type[IProvider]
-        :param provider_setting_gui_class: Optional settings GUI class
-        :type provider_setting_gui_class: type[IProviderSettingGUI] | None
         """
         pass
 
@@ -654,14 +652,6 @@ class IWindowHook(QObject, ABC, metaclass=QObjectABCMeta):
     windowsSearchClosed = Signal()
     windowsSearchStarted = Signal()
 
-    @abstractmethod
-    def set_provider_process_names(self, process_names: list[str]) -> None:
-        """Set the provider process names to monitor.
-
-        :param process_names: List of process names to monitor
-        :type process_names: list[str]
-        """
-        pass
 
     @abstractmethod
     def set_hook(self) -> None:
