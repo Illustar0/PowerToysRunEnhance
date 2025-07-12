@@ -11,7 +11,6 @@ from qfluentwidgets import (
 from src.core.interfaces import IMainInterface
 from src.ui.interfaces.component import (
     HyperLinkCard,
-    PrimaryPushCard,
     SwitchCard,
     SettingCardGroup,
 )
@@ -58,7 +57,7 @@ class MainInterface(IMainInterface):
 
         self.setLayout(self.vBoxLayout)  # 设置主布局
 
-    def init_ui(self, version: str):
+    def init_ui(self):
         self.vBoxLayout.addWidget(
             Logo(
                 str(get_base_path() / "resources" / "logo.png"),
@@ -81,14 +80,6 @@ class MainInterface(IMainInterface):
             lambda _, enabled: self.enableChanged.emit(enabled)
         )
 
-        self.versionCard = PrimaryPushCard(
-            FluentIcon.UPDATE,
-            self.tr("Check for Updates"),
-            self.tr("Version Update"),
-            self.tr("Current Version: {version}").format(version=version),
-            parent=self.mainSettingCardGroup,
-        )
-
         self.githubCard = HyperLinkCard(
             FluentIcon.INFO,
             "https://github.com/Illustar0/WindowsSearchUtility",
@@ -98,9 +89,7 @@ class MainInterface(IMainInterface):
             parent=self.mainSettingCardGroup,
         )
 
-        self.mainSettingCardGroup.addSettingCards(
-            [self.enableCard, self.versionCard, self.githubCard]
-        )
+        self.mainSettingCardGroup.addSettingCards([self.enableCard, self.githubCard])
         self.vBoxLayout.addWidget(self.mainSettingCardGroup)
 
     def setEnable(self, enabled: bool):

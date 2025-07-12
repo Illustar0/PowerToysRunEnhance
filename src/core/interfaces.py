@@ -996,7 +996,9 @@ class ISettingInterface(QWidget, ABC, metaclass=QWidgetABCMeta):
         pass
 
     def init_ui(
-        self, provider_setting_card_groups_dict: dict[str, type[ISettingCardGroup]]
+        self,
+        provider_setting_card_groups_dict: dict[str, type[ISettingCardGroup]],
+        version: str,
     ):
         pass
 
@@ -1024,5 +1026,5 @@ class IMainInterface(QWidget, ABC, metaclass=QWidgetABCMeta):
     def setEnable(self, enabkled: bool):
         pass
 
-    def init_ui(self, version: str):
+    def init_ui(self):
         pass

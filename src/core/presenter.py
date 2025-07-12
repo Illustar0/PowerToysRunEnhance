@@ -2,12 +2,20 @@ import ctypes.wintypes
 import sys
 from typing import Any
 
+import httpx
 import win32con
-from PySide6.QtCore import Signal, Slot, QObject, QAbstractNativeEventFilter
+from PySide6.QtCore import (
+    Signal,
+    Slot,
+    QObject,
+    QAbstractNativeEventFilter,
+    QThread,
+    Qt,
+)
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QSystemTrayIcon
 from loguru import logger
-from qfluentwidgets import Theme, qconfig
+from qfluentwidgets import Theme, qconfig, InfoBar, InfoBarPosition, HyperlinkButton
 from qframelesswindow.utils import getSystemAccentColor
 
 from src.core.interfaces import (
@@ -135,11 +143,22 @@ class SettingInterfacePresenter(ISettingInterfacePresenter):
     ):
         super().__init__()
         self.setting_interface = setting_interface
+
+        from src.ui.interfaces.setting import SettingInterface
+
+        # noinspection PyTypeChecker
+        self.setting_ui: SettingInterface = setting_interface
+
         self.config_service = config_service
         self.provider_registry = provider_registry
         self.settingCardDict = {}
+
+        self.setting_ui.versionCard.clicked.connect(self._onVersionCardClicked)
+
         for SettingCardGroup in self.setting_interface.listSettingCardGroups():
             for SettingCard in SettingCardGroup.listSettingCard():
+                if not hasattr(SettingCard, "configPath"):
+                    continue
                 self.settingCardDict.update({SettingCard.configPath: SettingCard})
 
                 if SettingCard.configPath == "Common.active_provider":
@@ -165,3 +184,80 @@ class SettingInterfacePresenter(ISettingInterfacePresenter):
                     SettingCard.setValue(
                         self.config_service.get(SettingCard.configPath)
                     )
+
+    class UpdateCheckWorker(QThread):
+        updateResult = Signal(dict)
+        updateError = Signal(str)
+
+        def __init__(self, current_version: str):
+            super().__init__()
+            self.current_version = current_version
+
+        def run(self):
+            try:
+                response = httpx.get(
+                    "https://api.github.com/repos/Illustar0/WindowsSearchUtility/releases/latest"
+                )
+                response.raise_for_status()
+
+                release_data = response.json()
+                latest_version = release_data["tag_name"].lstrip("v")
+
+                result = {
+                    "latest_version": latest_version,
+                    "current_version": self.current_version,
+                    "has_update": latest_version != self.current_version,
+                    "download_url": release_data.get("html_url", ""),
+                }
+                self.updateResult.emit(result)
+
+            except Exception as e:
+                self.updateError.emit(str(e))
+
+    def _onVersionCardClicked(self):
+        # 防止重复点击
+        if hasattr(self, "update_worker") and self.update_worker.isRunning():
+            return
+
+        self.setting_ui.versionCard.setContent(self.tr("Checking for updates..."))
+
+        # 获取当前版本
+        current_version = self.setting_ui.versionCard.titleLabel.text().split("v")[1]
+
+        # 创建工作线程
+        self.update_worker = self.UpdateCheckWorker(current_version)
+        self.update_worker.updateResult.connect(self._onUpdateCheckFinished)
+        self.update_worker.updateError.connect(self._onUpdateCheckError)
+        self.update_worker.start()
+
+    def _onUpdateCheckFinished(self, result: dict):
+        if result["has_update"]:
+            self.setting_ui.versionCard.setContent(
+                self.tr("Update available: v{version}").format(
+                    version=result["latest_version"]
+                )
+            )
+            infoBar = InfoBar.info(
+                title=f"v{result['latest_version']}",
+                content="Update available.",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.BOTTOM,
+                duration=8000,
+                parent=self.setting_interface.window(),
+            )
+            infoBar.addWidget(
+                HyperlinkButton(
+                    f"{result['download_url']}",
+                    "Update",
+                )
+            )
+            infoBar.show()
+        else:
+            self.setting_ui.versionCard.setContent(
+                self.tr("You have the latest version")
+            )
+
+    def _onUpdateCheckError(self, error: str):
+        logger.error(error)
+        self.setting_ui.versionCard.setContent(self.tr("Failed to check for updates"))

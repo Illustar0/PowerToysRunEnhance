@@ -10,6 +10,7 @@ from src.ui.interfaces.component import (
     SettingCardGroup,
     SwitchCard,
     ComboBoxCard,
+    PushCard,
 )
 
 
@@ -48,7 +49,9 @@ class SettingInterface(ISettingInterface):
         self._settingCardGroups = []
 
     def init_ui(
-        self, provider_setting_card_groups_dict: dict[str, type[SettingCardGroup]]
+        self,
+        provider_setting_card_groups_dict: dict[str, type[SettingCardGroup]],
+        version: str,
     ):
         # Common Settings Group
         commonGroup = SettingCardGroup(self.tr("Common"), self)
@@ -80,6 +83,18 @@ class SettingInterface(ISettingInterface):
         commonGroup.addSettingCards([autoFocusCard, activeProviderCard])
         # commonGroup.addSettingCards([autoFocusCard, activeProviderCard, languageCard])
         self._settingCardGroups.append(commonGroup)
+
+        versionGroup = SettingCardGroup(self.tr("Version Update"), self)
+        self.versionCard = PushCard(
+            FluentIcon.SYNC,
+            self.tr("Check for Updates"),
+            self.tr("v{version}").format(version=version),
+            self.tr("Click to check for new version"),
+            parent=versionGroup,
+        )
+
+        versionGroup.addSettingCard(self.versionCard)
+        self._settingCardGroups.append(versionGroup)
 
         # Add provider setting card groups
         for (

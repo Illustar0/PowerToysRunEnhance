@@ -33,7 +33,7 @@ if __name__ == "__main__":
     native_event_filter = container.native_event_filter()
     tray_icon = container.tray_icon()
     main_interface = container.main_interface()
-    main_interface.init_ui(app_model.get_version())
+    main_interface.init_ui()
 
     setting_interface = container.setting_interface()
     provider_setting_card_groups_dict = {}
@@ -41,13 +41,20 @@ if __name__ == "__main__":
         provider_setting_card_groups_dict.update(
             {meta.provider_name_tr: meta.setting_group}
         )
-    setting_interface.init_ui(provider_setting_card_groups_dict)
+    setting_interface.init_ui(
+        provider_setting_card_groups_dict, app_model.get_version()
+    )
     main_window = container.main_window()
 
     container.wiring()
 
     # 主窗口
-    main_window.addSubInterface(main_interface, FluentIcon.HOME, "Home")
+    main_window.addSubInterface(main_interface, FluentIcon.HOME, "Dash")
+    main_window.addSubInterface(
+        setting_interface,
+        FluentIcon.SETTING,
+        "Settings",
+    )
     main_window.navigationInterface.addSeparator()
     main_window.navigationInterface.addWidget(
         routeKey="Avatar",
@@ -55,12 +62,6 @@ if __name__ == "__main__":
             "Illustar0", str(get_base_path() / "resources" / "Avatar.png")
         ),
         position=NavigationItemPosition.BOTTOM,
-    )
-    main_window.addSubInterface(
-        setting_interface,
-        FluentIcon.SETTING,
-        "Settings",
-        NavigationItemPosition.BOTTOM,
     )
 
     app_config = container.app_config()
