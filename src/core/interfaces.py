@@ -652,7 +652,6 @@ class IWindowHook(QObject, ABC, metaclass=QObjectABCMeta):
     windowsSearchClosed = Signal()
     windowsSearchStarted = Signal()
 
-
     @abstractmethod
     def set_hook(self) -> None:
         """Set up the window hook.

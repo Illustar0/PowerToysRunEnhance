@@ -1,10 +1,6 @@
-from PySide6.QtCore import QTimer, Signal, QSize
+from PySide6.QtCore import QTimer, Signal
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QSystemTrayIcon
 from qfluentwidgets import (
-    FluentIcon,
-    NavigationAvatarWidget,
-    NavigationItemPosition,
     isDarkTheme,
 )
 

@@ -1,5 +1,6 @@
 import sys
 
+from PySide6.QtGui import QDesktopServices
 from qfluentwidgets import (
     setTheme,
     Theme,
@@ -56,11 +57,17 @@ if __name__ == "__main__":
         "Settings",
     )
     main_window.navigationInterface.addSeparator()
+
+    avatar = NavigationAvatarWidget(
+        "Illustar0", str(get_base_path() / "resources" / "Avatar.png")
+    )
+    avatar.clicked.connect(
+        lambda: QDesktopServices.openUrl("https://github.com/Illustar0")
+    )
+
     main_window.navigationInterface.addWidget(
         routeKey="Avatar",
-        widget=NavigationAvatarWidget(
-            "Illustar0", str(get_base_path() / "resources" / "Avatar.png")
-        ),
+        widget=avatar,
         position=NavigationItemPosition.BOTTOM,
     )
 
