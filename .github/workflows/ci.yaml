@@ -18,7 +18,7 @@ jobs:
       group: release-${{ matrix.debug }}
     steps:
       - name: Setup | Checkout Repository at workflow sha
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.sha }}
