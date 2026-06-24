@@ -68,7 +68,7 @@ jobs:
         run: .\scripts\build.ps1
 
       - name: Cache build artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: src/Output
           key: build-artifacts-${{github.sha}}
@@ -86,7 +86,7 @@ jobs:
           fetch-depth: 0
 
       - name: Restore cached build artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: src/Output
           key: build-artifacts-${{github.sha}}
